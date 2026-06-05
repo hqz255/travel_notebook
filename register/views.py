@@ -115,4 +115,4 @@ def send_verification_code(request):
     except Exception as e:
         # 邮件发送失败时清除验证码，返回错误信息
         request.session.pop('register_verification_code', None)
-        return JsonResponse({'success': False, 'message': f'验证码发送失败，请稍后重试'})
+        return JsonResponse({'success': False, 'message': '验证码发送失败，请稍后重试'})
