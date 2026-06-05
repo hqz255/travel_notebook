@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'login',
+    'register',
 ]
 
 MIDDLEWARE = [
@@ -128,4 +129,19 @@ STATICFILES_DIRS = [
 
 
 # 在某些模块需要登录状态下时使用，使用方法见blog/views
-LOGIN_URL = '/auth/login'
+LOGIN_URL = '/login/'
+
+# ==================== QQ邮箱SMTP配置 ====================
+# 使用QQ邮箱发送验证码邮件
+# 1. 登录QQ邮箱 → 设置 → 账户 → 开启 POP3/SMTP 服务
+# 2. 获取授权码（不是QQ密码），填入下方的 EMAIL_HOST_PASSWORD
+# 3. QQ邮箱SMTP服务器：smtp.qq.com，端口 587（TLS）
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.qq.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = '1357336708@qq.com'          # TODO: 替换为你的QQ邮箱地址
+EMAIL_HOST_PASSWORD = 'qhqcxuubeuxsfiaf'   # TODO: 替换为QQ邮箱授权码
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER               # 发件人地址

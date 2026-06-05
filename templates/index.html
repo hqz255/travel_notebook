@@ -207,6 +207,81 @@
             background: rgba(0, 212, 255, 0.4);
             border-color: #00d4ff;
         }
+
+        /* 功能卡片区域 */
+        .features-section {
+            width: 100%;
+            padding: 80px 40px;
+            background: linear-gradient(180deg, #0a1628 0%, #0d2137 100%);
+        }
+
+        .features-section .section-title {
+            text-align: center;
+            color: #fff;
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .features-section .section-subtitle {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 16px;
+            margin-bottom: 48px;
+        }
+
+        /* 田字格布局：2行 × 2列 */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 28px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 40px 36px;
+            text-align: center;
+            transition: transform 0.3s, border-color 0.3s, background 0.3s;
+            cursor: default;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(0, 212, 255, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .feature-card .card-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            color: #fff;
+        }
+
+        .feature-card h4 {
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .feature-card p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            line-height: 1.7;
+            margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -249,22 +324,65 @@
         <!-- 登录表单 -->
         <div class="login-card">
             <h3 class="login-title">用户登录</h3>
-            <form class="login-form" action="" method="post">
+            <form class="login-form" action="{% url 'login' %}" method="post">
+                {% csrf_token %}
+
+                {% if errors %}
+                <div class="alert alert-danger" style="padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:14px;">
+                    <ul style="margin:0;padding-left:18px;">
+                        {% for error in errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
                     <div class="form-group">
-                        <input type="email" class="form-input" placeholder="请输入邮箱" required>
+                        <input type="email" class="form-input" name="email" id="email"
+                               placeholder="请输入邮箱" value="{{ form_data.email|default:'' }}" required>
                     </div>
                     <div class="form-group">
-                        <input type="password" class="form-input" placeholder="请输入密码" required>
+                        <input type="password" class="form-input" name="password"
+                               placeholder="请输入密码" required>
                     </div>
                     <div class="form-group verify-group">
-                        <input type="text" class="form-input verify-input" placeholder="请输入验证码" required>
-                        <button type="button" class="btn-verify">发送验证码</button>
+                        <input type="text" class="form-input verify-input" name="verification_code"
+                               placeholder="请输入验证码" required>
+                        <button type="button" class="btn-verify" id="sendCodeBtn">发送验证码</button>
                     </div>
                     <button type="submit" class="btn-login">立即登录</button>
                     <div class="register-link">
-                        没有账号，<a href="#">立即注册</a>
+                        没有账号，<a href="/register/">立即注册</a>
                     </div>
                 </form>
+        </div>
+    </div>
+
+    <!-- 功能卡片 - 田字格布局 -->
+    <div class="features-section">
+        <h2 class="section-title">我们的服务</h2>
+        <p class="section-subtitle">用心记录每一段旅程</p>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="card-icon">📝</div>
+                <h4>记录回忆</h4>
+                <p>随时随地记录旅途中的美好瞬间，让每一段旅程都有迹可循</p>
+            </div>
+            <div class="feature-card">
+                <div class="card-icon">📸</div>
+                <h4>分享故事</h4>
+                <p>与朋友们分享你的旅行故事，让更多人感受你眼中的风景</p>
+            </div>
+            <div class="feature-card">
+                <div class="card-icon">🌍</div>
+                <h4>探索世界</h4>
+                <p>发现热门旅行目的地，获取最新旅游灵感，开启你的下一段旅程</p>
+            </div>
+            <div class="feature-card">
+                <div class="card-icon">💎</div>
+                <h4>珍藏瞬间</h4>
+                <p>将珍贵的旅行回忆永久保存，打造属于你自己的回忆博物馆</p>
+            </div>
         </div>
     </div>
 
@@ -333,5 +451,59 @@
 
     <script src="{% static 'Jquery/jquery.min.js' %}"></script>
     <script src="{% static 'bootstrap/bootstrap.bundle.min.js' %}"></script>
+    <script>
+        $(function () {
+            var $sendBtn = $('#sendCodeBtn');
+            var countdown = 0;
+            var timer = null;
+
+            $sendBtn.on('click', function () {
+                if (countdown > 0) return;
+
+                var email = $('#email').val().trim();
+                if (!email) {
+                    alert('请先输入邮箱地址');
+                    return;
+                }
+
+                // 发送前禁用按钮，防止重复点击
+                $sendBtn.text('发送中...').prop('disabled', true);
+
+                $.ajax({
+                    url: "{% url 'send_login_code' %}",
+                    type: 'POST',
+                    data: { email: email },
+                    headers: { 'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val() },
+                    success: function (res) {
+                        if (res.success) {
+                            alert(res.message || '验证码已发送，请注意查收邮件');
+                            // 开始倒计时
+                            countdown = 60;
+                            $sendBtn.text(countdown + '秒后重发').prop('disabled', true);
+                            timer = setInterval(function () {
+                                countdown--;
+                                if (countdown <= 0) {
+                                    clearInterval(timer);
+                                    $sendBtn.text('发送验证码').prop('disabled', false);
+                                } else {
+                                    $sendBtn.text(countdown + '秒后重发');
+                                }
+                            }, 1000);
+                        } else {
+                            // 发送失败，恢复按钮
+                            alert(res.message || '验证码发送失败，请重试');
+                            $sendBtn.text('发送验证码').prop('disabled', false);
+                        }
+                    },
+                    error: function () {
+                        alert('验证码发送失败，请检查网络后重试');
+                        countdown = 0;
+                        clearInterval(timer);
+                        $sendBtn.text('发送验证码').prop('disabled', false);
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
