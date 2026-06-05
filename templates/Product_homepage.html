@@ -1,0 +1,437 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel memories - 产品主页</title>
+    <link rel="stylesheet" href="{% static 'bootstrap/bootstrap.min.css' %}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f5f6fa;
+        }
+
+        /* ========== 导航栏样式（与主页一致） ========== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .navbar .nav-link {
+            color: #fff !important;
+            font-size: 15px;
+            margin: 0 12px;
+            transition: color 0.3s;
+        }
+
+        .navbar .nav-link:hover {
+            color: #00d4ff !important;
+        }
+
+        .navbar .navbar-brand {
+            color: #fff !important;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .navbar .navbar-brand:hover {
+            color: #00d4ff !important;
+        }
+
+        /* ========== 用户头像区域 ========== */
+        .avatar-wrapper {
+            position: relative;
+            margin-left: 28px;
+            cursor: pointer;
+        }
+
+        .avatar-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            transition: border-color 0.3s, transform 0.3s;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .avatar-wrapper:hover .avatar-img {
+            border-color: #00d4ff;
+            transform: scale(1.08);
+        }
+
+        /* 默认头像占位（无图片时显示首字母） */
+        .avatar-placeholder {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .avatar-wrapper:hover .avatar-placeholder {
+            border-color: #fff;
+            transform: scale(1.08);
+        }
+
+        /* 头像下拉菜单 */
+        .avatar-dropdown {
+            position: absolute;
+            right: 0;
+            top: 52px;
+            min-width: 160px;
+            background: rgba(30, 30, 50, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-8px);
+            transition: opacity 0.25s, visibility 0.25s, transform 0.25s;
+            z-index: 1001;
+        }
+
+        .avatar-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .avatar-dropdown .dropdown-header {
+            padding: 14px 18px 8px;
+            color: #ccc;
+            font-size: 13px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .avatar-dropdown .dropdown-header strong {
+            color: #fff;
+            font-size: 15px;
+        }
+
+        .avatar-dropdown .dropdown-item {
+            padding: 11px 18px;
+            color: #ddd;
+            font-size: 14px;
+            text-decoration: none;
+            display: block;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .avatar-dropdown .dropdown-item:hover {
+            background: rgba(0, 212, 255, 0.15);
+            color: #00d4ff;
+        }
+
+        .avatar-dropdown .dropdown-divider {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* ========== 主体内容 ========== */
+        .main-content {
+            padding-top: 80px;  /* 留出导航栏高度 */
+            min-height: 100vh;
+        }
+
+        /* 欢迎横幅 */
+        .welcome-banner {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #fff;
+            padding: 60px 0 50px;
+            text-align: center;
+        }
+
+        .welcome-banner h1 {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .welcome-banner p {
+            font-size: 17px;
+            opacity: 0.8;
+        }
+
+        /* 功能卡片区域 */
+        .feature-section {
+            padding: 60px 0;
+        }
+
+        .feature-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 36px 28px;
+            text-align: center;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+        }
+
+        .feature-card .icon-circle {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h5 {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .feature-card p {
+            color: #777;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .icon-blue   { background: #e6f4ff; color: #1890ff; }
+        .icon-green  { background: #e6fffb; color: #13c2c2; }
+        .icon-orange { background: #fff7e6; color: #fa8c16; }
+        .icon-purple { background: #f9f0ff; color: #722ed1; }
+
+        /* 页脚 */
+        .site-footer {
+            background: #1a1a2e;
+            color: rgba(255,255,255,0.5);
+            text-align: center;
+            padding: 24px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== 导航栏 ==================== -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="#">Travel memories</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="切换导航">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'index' %}">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#aboutModal">关于我们</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#serviceModal">服务项目</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#contactModal">联系我们</a>
+                    </li>
+                </ul>
+
+                <!-- ====== 用户头像 ====== -->
+                <div class="avatar-wrapper" id="avatarWrapper">
+                    <!-- 默认显示首字母占位，有头像时可替换为 <img> -->
+                    <div class="avatar-placeholder" id="avatarPlaceholder" title="用户菜单">U</div>
+                    <!-- 如果用户有头像图片，用下面这行替换上面那行 -->
+                    <!-- <img class="avatar-img" id="avatarImg" src="{% static 'images/default_avatar.png' %}" alt="头像" title="用户菜单"> -->
+
+                    <!-- 下拉菜单 -->
+                    <div class="avatar-dropdown" id="avatarDropdown">
+                        <div class="dropdown-header">
+                            <strong id="dropdownUsername">用户</strong>
+                            <br><small id="dropdownEmail">user@example.com</small>
+                        </div>
+                        <a class="dropdown-item" href="#">📋 我的回忆</a>
+                        <a class="dropdown-item" href="#">⭐ 我的收藏</a>
+                        <a class="dropdown-item" href="#">⚙️ 账号设置</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="{% url 'index' %}" style="color:#ff6b6b;">🚪 退出登录</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ==================== 主体内容 ==================== -->
+    <div class="main-content">
+
+        <!-- 欢迎横幅 -->
+        <section class="welcome-banner">
+            <div class="container">
+                <h1>👋 欢迎回来，旅行者！</h1>
+                <p>在这里记录和分享你的每一次美好旅程</p>
+            </div>
+        </section>
+
+        <!-- 功能卡片 -->
+        <section class="feature-section">
+            <div class="container">
+                <div class="row g-4">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="feature-card">
+                            <div class="icon-circle icon-blue">📝</div>
+                            <h5>写回忆</h5>
+                            <p>用文字和图片记录旅途中的点点滴滴</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="feature-card">
+                            <div class="icon-circle icon-green">🌍</div>
+                            <h5>探索世界</h5>
+                            <p>发现其他旅行者的精彩故事和攻略</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="feature-card">
+                            <div class="icon-circle icon-orange">💬</div>
+                            <h5>互动交流</h5>
+                            <p>与志同道合的旅友分享心得与建议</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="feature-card">
+                            <div class="icon-circle icon-purple">📊</div>
+                            <h5>旅行足迹</h5>
+                            <p>查看你去过的地方，生成专属旅行地图</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="site-footer">
+        <div class="container">
+            &copy; 2026 Travel memories. All rights reserved.
+        </div>
+    </footer>
+
+    <!-- ========== 关于我们 弹窗 ========== -->
+    <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="aboutModalLabel">关于我们</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Travel memories 是一个专注于旅游记忆分享的平台，致力于为每一位旅行者记录旅途中的美好瞬间。</p>
+                    <p>我们的团队由一群热爱旅行、热爱生活的年轻人组成，希望通过这个平台，让更多人感受到旅行的魅力。</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 服务项目 弹窗 ========== -->
+    <div class="modal fade" id="serviceModal" tabindex="-1" aria-labelledby="serviceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="serviceModalLabel">服务项目</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+                </div>
+                <div class="modal-body">
+                    <p>存储回忆，分享回忆，让大家都能拥有一段值得探讨和独自回味的回忆</p>
+                    <p>如有需求，欢迎随时联系我们。</p>
+                    <p>邮箱：13390767954@163.com</p>
+                    <p>电话：13390767954</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 联系我们 弹窗 ========== -->
+    <div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="contactModalLabel">联系我们</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+                </div>
+                <div class="modal-body">
+                    <p>以下是我们的联系方式，欢迎随时联系我们。</p>
+                    <p>邮箱：13390767954@163.com</p>
+                    <p>电话：13390767954</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'Jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'bootstrap/bootstrap.bundle.min.js' %}"></script>
+    <script>
+    $(function () {
+        // ========== 头像下拉菜单切换 ==========
+        var $avatarWrapper = $('#avatarWrapper');
+        var $dropdown = $('#avatarDropdown');
+
+        $avatarWrapper.on('click', function (e) {
+            e.stopPropagation();
+            $dropdown.toggleClass('show');
+        });
+
+        // 点击页面其他区域关闭下拉菜单
+        $(document).on('click', function () {
+            $dropdown.removeClass('show');
+        });
+
+        // 点击下拉菜单内部不关闭
+        $dropdown.on('click', function (e) {
+            e.stopPropagation();
+        });
+
+        // ========== 后续可在此处通过 AJAX 加载用户信息填充头像和下拉菜单 ==========
+        // 示例：
+        // $.get('/api/user/profile/', function (user) {
+        //     $('#dropdownUsername').text(user.nickname || user.username);
+        //     $('#dropdownEmail').text(user.email);
+        //     if (user.avatar_url) {
+        //         $('#avatarPlaceholder').hide();
+        //         $('#avatarImg').attr('src', user.avatar_url).show();
+        //     } else {
+        //         $('#avatarPlaceholder').text(user.nickname ? user.nickname[0].toUpperCase() : 'U');
+        //     }
+        // });
+    });
+    </script>
+</body>
+</html>
