@@ -166,7 +166,7 @@
                             <span class="category-badge">{{ cat.name }}</span>
                             {% endfor %}
                         </div>
-                        <a href="#" class="read-more-btn">阅读全文 →</a>
+                        <a href="{% url 'explore_world:article_detail' article.id %}" class="read-more-btn">阅读全文 →</a>
                     </div>
                 </div>
                 {% endfor %}

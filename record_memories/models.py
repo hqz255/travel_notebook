@@ -1,3 +1,6 @@
+import os
+
+from django.conf import settings
 from django.db import models
 
 
@@ -63,9 +66,21 @@ class Article(models.Model):
     def __str__(self):
         return self.title
 
+    def _image_exists(self, path):
+        """检查图片文件是否真实存在于 media 目录"""
+        full_path = os.path.join(settings.MEDIA_ROOT, path)
+        return os.path.isfile(full_path)
+
     @property
     def image_urls(self):
-        """返回图片的完整 URL 路径列表"""
+        """返回图片的完整 URL 路径列表（仅返回确实存在的文件）"""
+        if not self.images:
+            return []
+        return [f'/media/{path}' for path in self.images if self._image_exists(path)]
+
+    @property
+    def all_image_urls(self):
+        """返回所有图片 URL（包括不存在的），用于调试"""
         if not self.images:
             return []
         return [f'/media/{path}' for path in self.images]
@@ -74,3 +89,41 @@ class Article(models.Model):
     def category_names(self):
         """返回所有分类名称列表"""
         return list(self.categories.values_list('name', flat=True))
+
+
+class Comment(models.Model):
+    """文章评论表"""
+    article = models.ForeignKey(
+        Article,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='所属文章',
+    )
+    author = models.ForeignKey(
+        'register.User',
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='评论者',
+    )
+    content = models.TextField(verbose_name='评论内容')
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='replies',
+        verbose_name='父评论',
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+
+    class Meta:
+        db_table = 'article_comment'
+        verbose_name = '文章评论'
+        verbose_name_plural = verbose_name
+        ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['article', 'created_at']),
+        ]
+
+    def __str__(self):
+        return f'{self.author.username}: {self.content[:50]}'
