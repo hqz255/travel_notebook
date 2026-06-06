@@ -313,6 +313,12 @@
             transition: color 0.3s;
         }
         .comment-item .btn-reply:hover { color: #0099cc; }
+        .comment-item .btn-delete-comment {
+            background: none; border: none; color: #ccc;
+            cursor: pointer; font-size: 12px; padding: 0;
+            margin-left: 12px; transition: color 0.3s;
+        }
+        .comment-item .btn-delete-comment:hover { color: #e74c3c; }
 
         /* 回复区域 */
         .replies-wrap {
@@ -479,6 +485,9 @@
                                                 <button class="btn-reply" data-parent-id="{{ comment.id }}" data-parent-author="{{ comment.author.username }}">
                                                     回复
                                                 </button>
+                                                {% if comment.author_id == current_user_id or is_superuser %}
+                                                <button class="btn-delete-comment" data-comment-id="{{ comment.id }}" title="删除评论">删除</button>
+                                                {% endif %}
                                             </div>
                                         </div>
                                     </div>
@@ -499,6 +508,9 @@
                                                         <button class="btn-reply" data-parent-id="{{ comment.id }}" data-parent-author="{{ comment.author.username }}">
                                                             回复
                                                         </button>
+                                                        {% if reply.author_id == current_user_id or is_superuser %}
+                                                        <button class="btn-delete-comment" data-comment-id="{{ reply.id }}" title="删除评论">删除</button>
+                                                        {% endif %}
                                                     </div>
                                                 </div>
                                             </div>
@@ -555,6 +567,10 @@
                                 <div class="stat-item">
                                     <span>阅读量</span>
                                     <strong>{{ article.views_count }}</strong>
+                                </div>
+                                <div class="stat-item">
+                                    <span>评论数</span>
+                                    <strong>{{ comments.count }}</strong>
                                 </div>
                                 <div class="stat-item">
                                     <span>分类</span>
@@ -656,6 +672,8 @@
 
         // ========== 评论区交互 ==========
         var articleId = {{ article.id|default:0 }};
+        var currentUserId = {{ current_user_id|default:0 }};
+        var isSuperuser = {{ is_superuser|default:0 }};
         if (articleId) {
             // 评论内容字数统计
             var $commentContent = $('#commentContent');
@@ -755,6 +773,41 @@
                 });
             });
 
+            // 删除评论
+            $('#commentList').on('click', '.btn-delete-comment', function () {
+                var commentId = $(this).data('comment-id');
+                if (!confirm('确认删除这条评论吗？删除后无法恢复。')) {
+                    return;
+                }
+
+                var $btn = $(this);
+                $btn.prop('disabled', true).text('删除中…');
+
+                $.ajax({
+                    url: '/explore/comment/' + commentId + '/delete/',
+                    type: 'POST',
+                    headers: { 'X-CSRFToken': getCSRFToken() },
+                    success: function (res) {
+                        if (res.success) {
+                            refreshComments();
+                        } else {
+                            alert(res.error || '删除失败，请稍后重试。');
+                        }
+                    },
+                    error: function (xhr) {
+                        var msg = '网络异常，请稍后重试。';
+                        try {
+                            var resp = JSON.parse(xhr.responseText);
+                            if (resp.error) msg = resp.error;
+                        } catch (e) {}
+                        alert(msg);
+                    },
+                    complete: function () {
+                        $btn.prop('disabled', false).text('删除');
+                    }
+                });
+            });
+
             // 刷新评论列表
             function refreshComments() {
                 $.ajax({
@@ -807,6 +860,9 @@
                 html += '<div class="comment-content">' + escapeHtml(c.content) + '</div>';
                 html += '<div class="comment-actions">';
                 html += '<button class="btn-reply" data-parent-id="' + c.id + '" data-parent-author="' + escapeHtml(c.author) + '">回复</button>';
+                if (c.author_id === currentUserId || isSuperuser) {
+                    html += '<button class="btn-delete-comment" data-comment-id="' + c.id + '" title="删除评论">删除</button>';
+                }
                 html += '</div></div></div>';
 
                 // 回复列表
@@ -822,6 +878,9 @@
                         html += '<div class="comment-content">' + escapeHtml(r.content) + '</div>';
                         html += '<div class="comment-actions">';
                         html += '<button class="btn-reply" data-parent-id="' + c.id + '" data-parent-author="' + escapeHtml(c.author) + '">回复</button>';
+                        if (r.author_id === currentUserId || isSuperuser) {
+                            html += '<button class="btn-delete-comment" data-comment-id="' + r.id + '" title="删除评论">删除</button>';
+                        }
                         html += '</div></div></div>';
                     });
                     html += '</div>';

@@ -1,4 +1,41 @@
 <!-- 已登录用户共享导航栏 -->
+<style>
+	/* ===== 导航栏搜索框 ===== */
+	.nav-search-form { margin-right: 16px; }
+	.search-input-group {
+		display: flex; align-items: center;
+		background: rgba(255, 255, 255, 0.12);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		border-radius: 22px;
+		padding: 0 6px 0 16px;
+		transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+	}
+	.search-input-group:focus-within {
+		background: rgba(255, 255, 255, 0.2);
+		border-color: #00d4ff;
+		box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.15);
+	}
+	.search-input {
+		width: 200px; height: 36px;
+		background: transparent; border: none; outline: none;
+		color: #fff; font-size: 14px;
+	}
+	.search-input::placeholder { color: rgba(255, 255, 255, 0.5); font-size: 13px; }
+	.search-btn {
+		width: 34px; height: 34px;
+		background: linear-gradient(135deg, #00d4ff, #0099cc);
+		border: none; border-radius: 50%;
+		color: #fff; font-size: 15px; cursor: pointer;
+		display: flex; align-items: center; justify-content: center;
+		transition: opacity 0.3s, transform 0.3s;
+	}
+	.search-btn:hover { opacity: 0.85; transform: scale(1.06); }
+	/* 移动端适配 */
+	@media (max-width: 991.98px) {
+		.nav-search-form { margin-right: 0; margin-bottom: 12px; }
+		.search-input { width: 100%; }
+	}
+</style>
 <nav class="navbar navbar-expand-lg">
     <div class="container">
         <a class="navbar-brand" href="{% url 'product_homepage' %}">Travel memories</a>
@@ -9,7 +46,7 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <!-- 中间导航链接（当前页面不显示对应的链接，通过 hide_nav_links 控制是否全部隐藏） -->
             {% if not hide_nav_links %}
-            <ul class="navbar-nav mx-auto">
+            <ul class="navbar-nav ms-4">
                 {% if active_page != 'write_memory' %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'record_memories:wmmr' %}">📝 写回忆</a>
@@ -32,8 +69,19 @@
                 {% endif %}
             </ul>
             {% endif %}
+            <!-- 搜索框 -->
+            <form class="nav-search-form ms-auto" action="{% url 'explore_world:search' %}" method="GET">
+                <div class="search-input-group">
+                    <input class="search-input" type="text" name="q" placeholder="搜索文章、内容、分类..."
+                           value="{{ search_query|default:'' }}" autocomplete="off">
+                    <button class="search-btn" type="submit" title="搜索">
+                        🔍
+                    </button>
+                </div>
+            </form>
+
             <!-- 用户头像 -->
-            <div class="avatar-wrapper ms-auto" id="avatarWrapper">
+            <div class="avatar-wrapper" id="avatarWrapper">
                 <!-- 默认显示首字母占位，有头像时可替换为 <img> -->
                 <div class="avatar-placeholder" id="avatarPlaceholder" title="用户菜单">{{ username|slice:":1"|upper }}</div>
                 <!-- 如果用户有头像图片，用下面这行替换上面那行 -->

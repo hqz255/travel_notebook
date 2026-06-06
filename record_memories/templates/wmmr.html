@@ -409,25 +409,6 @@
             box-shadow: 0 8px 24px rgba(0, 212, 255, 0.35);
         }
 
-        .btn-draft {
-            width: 100%;
-            padding: 14px 0;
-            font-size: 17px;
-            font-weight: 600;
-            color: #555;
-            text-align: center;
-            background: #f5f6fa;
-            border: 1.5px solid #e8e8e8;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-draft:hover {
-            background: #ebedf2;
-            border-color: #ccc;
-        }
-
         /* ========== 页脚 ========== */
         .site-footer {
             background: #1a1a2e;
@@ -489,7 +470,6 @@
                         <div class="publish-card">
                             <form id="publishForm" method="POST" enctype="multipart/form-data">
                                 {% csrf_token %}
-                                <input type="hidden" name="action" id="actionInput" value="publish">
 
                                 <!-- 文章标题 -->
                                 <div class="mb-4">
@@ -547,18 +527,11 @@
                                         rows="12" required>{{ form_data.content|default:'' }}</textarea>
                                 </div>
 
-                                <!-- 按钮组 -->
-                                <div class="row g-3 mt-2">
-                                    <div class="col-md-6">
-                                        <button type="button" class="btn-draft" id="btnDraft">
-                                            💾 保存草稿
-                                        </button>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <button type="submit" class="btn-submit-publish" id="btnPublish">
-                                            🚀 立即发布
-                                        </button>
-                                    </div>
+                                <!-- 发布按钮 -->
+                                <div class="mt-3">
+                                    <button type="submit" class="btn-submit-publish" id="btnPublish">
+                                        🚀 立即发布
+                                    </button>
                                 </div>
                             </form>
                         </div>
@@ -755,32 +728,21 @@
 
         // ========== 表单提交前确认 ==========
         $('#publishForm').on('submit', function (e) {
-            var action = $('#actionInput').val();
             var title = $('#postTitle').val().trim();
             var content = $('#postContent').val().trim();
 
-            // 发布时需要标题和内容必填
-            if (action === 'publish') {
-                if (!title) {
-                    e.preventDefault();
-                    alert('请输入文章标题');
-                    return;
-                }
-                if (!content) {
-                    e.preventDefault();
-                    alert('请输入文章内容');
-                    return;
-                }
-                if (!confirm('确认发布这篇文章吗？')) {
-                    e.preventDefault();
-                    return;
-                }
-            }
-
-            // 草稿也需要至少标题或内容
-            if (action === 'draft' && !title && !content) {
+            if (!title) {
                 e.preventDefault();
-                alert('请至少填写标题或内容再保存草稿');
+                alert('请输入文章标题');
+                return;
+            }
+            if (!content) {
+                e.preventDefault();
+                alert('请输入文章内容');
+                return;
+            }
+            if (!confirm('确认发布这篇文章吗？')) {
+                e.preventDefault();
                 return;
             }
 
@@ -790,31 +752,6 @@
                 dt.items.add(file);
             });
             $('#imageInput')[0].files = dt.files;
-        });
-
-        // 发布按钮点击时确保 action 为 publish
-        $('#btnPublish').on('click', function () {
-            $('#actionInput').val('publish');
-        });
-
-        // ========== 保存草稿按钮 ==========
-        $('#btnDraft').on('click', function () {
-            var title = $('#postTitle').val().trim();
-            var content = $('#postContent').val().trim();
-            if (!title && !content) {
-                alert('请至少填写标题或内容再保存草稿');
-                return;
-            }
-            // 将已选择的所有图片同步到 file input 中
-            var dt = new DataTransfer();
-            imageFiles.forEach(function(file) {
-                dt.items.add(file);
-            });
-            $('#imageInput')[0].files = dt.files;
-
-            // 设置 action 为 draft
-            $('#actionInput').val('draft');
-            $('#publishForm')[0].submit();
         });
     });
     </script>

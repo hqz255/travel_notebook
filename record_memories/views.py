@@ -120,7 +120,7 @@ def wmmr(request):
     """我的每日 — 发布页面
 
     GET:  渲染发布表单
-    POST: 处理文章发布/保存草稿
+    POST: 处理文章发布
     """
     user = request.user_obj
 
@@ -141,7 +141,6 @@ def wmmr(request):
         title = request.POST.get('title', '').strip()
         category_ids_raw = request.POST.get('category_ids', '').strip()
         content = request.POST.get('content', '').strip()
-        action = request.POST.get('action', 'publish').strip()
         uploaded_images = request.FILES.getlist('images')
 
         # 解析多选分类 ID
@@ -218,14 +217,10 @@ def wmmr(request):
                 saved_image_paths.append(f"uploads/{unique_name}")
 
         # 保存文章到数据库
-        is_draft = (action == 'draft')
-        status = 'draft' if is_draft else 'published'
-
         article = Article.objects.create(
             title=title,
             content=content,
             author=user,
-            status=status,
             images=saved_image_paths,
         )
         # 关联分类
@@ -233,17 +228,10 @@ def wmmr(request):
 
         # 构建成功消息
         image_count = len(saved_image_paths)
-        if is_draft:
-            context['success'] = (
-                f'📝 草稿保存成功！'
-                + (f' 共保存 {image_count} 张图片' if image_count else '')
-                + ' 可在「我的回忆」中继续编辑。'
-            )
-        else:
-            context['success'] = (
-                f'🎉 文章发布成功！'
-                + (f' 共上传 {image_count} 张图片' if image_count else '')
-            )
+        context['success'] = (
+            f'🎉 文章发布成功！'
+            + (f' 共上传 {image_count} 张图片' if image_count else '')
+        )
 
         context['form_data'] = {}  # 清空表单
         return render(request, 'wmmr.html', context)

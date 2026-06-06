@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Travel memories - 探索世界</title>
+    <title>搜索结果 — Travel memories</title>
     <link rel="stylesheet" href="{% static 'bootstrap/bootstrap.min.css' %}">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -46,14 +46,45 @@
         .avatar-dropdown .dropdown-divider { border-top: 1px solid rgba(255, 255, 255, 0.1); }
 
         .main-content { padding-top: 80px; min-height: 100vh; }
-        .page-hero {
-            background: linear-gradient(135deg, #0a1628 0%, #0d2137 50%, #1a3a4a 100%);
-            color: #fff; text-align: center; padding: 80px 0 60px;
-        }
-        .page-hero h1 { font-size: 42px; font-weight: bold; margin-bottom: 16px; }
-        .page-hero p { font-size: 18px; opacity: 0.75; margin: 0; }
 
-        /* ========== 文章列表区域 ========== */
+        /* ===== 搜索结果头部 ===== */
+        .search-header {
+            background: linear-gradient(135deg, #0a1628 0%, #0d2137 50%, #1a3a4a 100%);
+            color: #fff; padding: 48px 0 36px;
+        }
+        .search-header h1 { font-size: 32px; font-weight: bold; margin-bottom: 8px; }
+        .search-header .search-summary { font-size: 15px; opacity: 0.75; }
+        .search-header .search-summary strong { color: #00d4ff; }
+
+        /* ===== 页面内搜索框（二次搜索） ===== */
+        .search-again-form { margin-top: 20px; }
+        .search-again-group {
+            display: flex; align-items: center; max-width: 520px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px; padding: 0 6px 0 18px;
+            transition: background 0.3s, border-color 0.3s;
+        }
+        .search-again-group:focus-within {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: #00d4ff;
+        }
+        .search-again-input {
+            flex: 1; height: 42px;
+            background: transparent; border: none; outline: none;
+            color: #fff; font-size: 15px;
+        }
+        .search-again-input::placeholder { color: rgba(255, 255, 255, 0.5); }
+        .search-again-btn {
+            height: 38px; padding: 0 24px;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            border: none; border-radius: 20px;
+            color: #fff; font-size: 14px; font-weight: 500; cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        .search-again-btn:hover { opacity: 0.85; }
+
+        /* ===== 文章列表 ===== */
         .articles-section { padding: 40px 0 80px; }
         .article-card {
             background: #fff;
@@ -68,6 +99,7 @@
             font-size: 22px; font-weight: bold; color: #1a1a2e;
             margin-bottom: 10px;
         }
+        .article-card .article-title .highlight { color: #00d4ff; }
         .article-card .article-meta {
             font-size: 13px; color: #999; margin-bottom: 14px;
             display: flex; align-items: center; flex-wrap: wrap; gap: 8px 18px;
@@ -105,6 +137,7 @@
             font-size: 12px; font-weight: 500;
         }
         .category-badge + .category-badge { margin-left: 6px; }
+        .category-badge.match { background: linear-gradient(135deg, #d4f5e9, #b8f0d2); color: #0d9e6c; }
         .read-more-btn {
             display: inline-block;
             background: linear-gradient(135deg, #00d4ff, #0099cc);
@@ -113,50 +146,51 @@
             transition: opacity 0.3s, transform 0.3s;
         }
         .read-more-btn:hover { opacity: 0.85; transform: scale(1.03); color: #fff; }
-        /* 空状态 */
+
+        /* ===== 空状态 ===== */
         .empty-state { text-align: center; padding: 80px 20px; }
         .empty-state .empty-icon { font-size: 64px; margin-bottom: 20px; }
         .empty-state h3 { font-size: 22px; margin-bottom: 10px; color: #333; }
-        .empty-state p { color: #999; font-size: 15px; margin-bottom: 24px; }
-        .empty-state .btn-write {
-            display: inline-block;
-            background: linear-gradient(135deg, #00d4ff, #0099cc);
-            color: #fff; padding: 10px 28px; border-radius: 24px;
-            font-size: 15px; text-decoration: none; transition: opacity 0.3s;
-        }
-        .empty-state .btn-write:hover { opacity: 0.85; color: #fff; }
-
-        /* 统计栏 */
-        .stats-bar {
-            display: flex; align-items: center; justify-content: space-between;
-            flex-wrap: wrap; gap: 12px; margin-bottom: 24px;
-        }
-        .stats-bar .total-count { font-size: 15px; color: #555; }
-        .stats-bar .total-count strong { color: #00d4ff; font-size: 18px; }
+        .empty-state p { color: #999; font-size: 15px; margin-bottom: 8px; }
+        .empty-state .suggestions { color: #888; font-size: 14px; margin-bottom: 24px; line-height: 1.8; }
 
         .site-footer { background: #1a1a2e; color: rgba(255,255,255,0.5); text-align: center; padding: 24px 0; font-size: 14px; }
+
+        /* ===== 搜索结果高亮关键词 ===== */
+        .highlight { background: #fff3cd; padding: 1px 3px; border-radius: 2px; font-weight: 500; }
     </style>
 </head>
 <body>
-    {% include 'includes/navbar_authenticated.html' with active_page='explore' %}
+    {% include 'includes/navbar_authenticated.html' %}
 
     <div class="main-content">
-        <section class="page-hero">
+        <!-- 搜索结果头部 -->
+        <section class="search-header">
             <div class="container">
-                <h1>🌍 探索世界</h1>
-                <p>发现热门旅行目的地，获取最新旅游灵感</p>
+                <h1>🔍 搜索结果</h1>
+                {% if search_query %}
+                <p class="search-summary">
+                    搜索 "<strong>{{ search_query }}</strong>" —
+                    找到 <strong>{{ results_count }}</strong> 篇文章
+                </p>
+                {% else %}
+                <p class="search-summary">请输入关键词开始搜索</p>
+                {% endif %}
+                <!-- 二次搜索框 -->
+                <form class="search-again-form" action="{% url 'explore_world:search' %}" method="GET">
+                    <div class="search-again-group">
+                        <input class="search-again-input" type="text" name="q"
+                               placeholder="输入关键词再次搜索..." value="{{ search_query|default:'' }}" autocomplete="off">
+                        <button class="search-again-btn" type="submit">🔍 搜索</button>
+                    </div>
+                </form>
             </div>
         </section>
+
+        <!-- 搜索结果列表 -->
         <section class="articles-section">
             <div class="container">
-                {% if articles %}
-                <div class="stats-bar">
-                    <div class="total-count">
-                        共 <strong>{{ articles|length }}</strong> 篇文章
-                    </div>
-                    <a href="{% url 'record_memories:wmmr' %}" class="read-more-btn">📝 写一篇新文章</a>
-                </div>
-
+                {% if search_query and articles %}
                 {% for article in articles %}
                 <div class="article-card">
                     <div class="article-title">
@@ -186,7 +220,7 @@
                     <div class="article-footer">
                         <div>
                             {% for cat in article.categories.all %}
-                            <span class="category-badge">{{ cat.name }}</span>
+                            <span class="category-badge{% if search_query|lower in cat.name|lower %} match{% endif %}">{{ cat.name }}</span>
                             {% endfor %}
                         </div>
                         <a href="{% url 'explore_world:article_detail' article.id %}" class="read-more-btn">阅读全文 →</a>
@@ -194,12 +228,27 @@
                 </div>
                 {% endfor %}
 
-                {% else %}
+                {% elif search_query and not articles %}
+                <!-- 无结果 -->
                 <div class="empty-state">
-                    <div class="empty-icon">📭</div>
-                    <h3>还没有文章</h3>
-                    <p>成为第一个分享旅行回忆的人吧！</p>
-                    <a href="{% url 'record_memories:wmmr' %}" class="btn-write">📝 写一篇文章</a>
+                    <div class="empty-icon">🔎</div>
+                    <h3>没有找到相关文章</h3>
+                    <p>没有找到包含 "<strong>{{ search_query }}</strong>" 的文章。</p>
+                    <div class="suggestions">
+                        建议：<br>
+                        • 检查关键词是否正确<br>
+                        • 尝试使用更通用的词汇<br>
+                        • 减少关键词数量
+                    </div>
+                    <a href="{% url 'explore_world:explore_world' %}" class="read-more-btn">← 浏览全部文章</a>
+                </div>
+                {% else %}
+                <!-- 未输入关键词 -->
+                <div class="empty-state">
+                    <div class="empty-icon">⌨️</div>
+                    <h3>输入关键词开始搜索</h3>
+                    <p>可以搜索文章标题、内容或分类名称</p>
+                    <a href="{% url 'explore_world:explore_world' %}" class="read-more-btn">← 浏览全部文章</a>
                 </div>
                 {% endif %}
             </div>

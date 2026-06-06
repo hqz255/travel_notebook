@@ -40,8 +40,8 @@ python manage.py createsuperuser
 |---|---|---|
 | `register` | Custom `User` model, registration view, email verification code | Yes — **the canonical User model** |
 | `login` | Login view, login verification code (`login/` URLs, no models) | No — uses `register.User` |
-| `record_memories` | Article CRUD — write/publish/draft travel articles with image uploads (`wmmr/` URLs) | Yes — `Article`, `ArticleCategory` |
-| `explore_world` | Browse all published articles from all users (`explore/` URLs) | No |
+| `record_memories` | Article CRUD — write/publish travel articles with image uploads (`wmmr/` URLs) | Yes — `Article`, `ArticleCategory` |
+| `explore_world` | Browse all articles from all users (`explore/` URLs) | No |
 | `interact` | Placeholder for social/interaction features (`interact/` URLs) | No |
 | `travel_footprint` | Placeholder for travel map/footprint features (`footprint/` URLs) | No |
 

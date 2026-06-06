@@ -1,8 +1,9 @@
+from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_http_methods
 
-from record_memories.models import Article, Comment
+from record_memories.models import Article, ArticleCategory, Comment
 from the_root.decorators import login_required
 
 
@@ -13,9 +14,9 @@ def explore_world(request):
 
     articles = (
         Article.objects
-        .filter(status='published')
         .select_related('author')
         .prefetch_related('categories')
+        .annotate(comment_count=Count('comments'))
         .order_by('-created_at')
     )
 
@@ -38,14 +39,6 @@ def article_detail(request, article_id):
         id=article_id,
     )
 
-    # 只允许查看已发布的文章，或者作者本人查看自己的文章
-    if article.status != 'published' and article.author_id != user.id:
-        return render(request, 'article_details.html', {
-            'username': user.username,
-            'email': user.email,
-            'article': None,
-            'error': '文章不存在或尚未发布。',
-        })
 
     # 非作者访问时增加浏览量
     if article.author_id != user.id:
@@ -64,6 +57,8 @@ def article_detail(request, article_id):
     return render(request, 'article_details.html', {
         'username': user.username,
         'email': user.email,
+        'current_user_id': user.id,
+        'is_superuser': user.superuser,
         'article': article,
         'comments': comments,
     })
@@ -76,8 +71,6 @@ def post_comment(request, article_id):
     user = request.user_obj
 
     article = get_object_or_404(Article, id=article_id)
-    if article.status != 'published' and article.author_id != user.id:
-        return JsonResponse({'success': False, 'error': '文章不存在或尚未发布。'}, status=404)
 
     content = request.POST.get('content', '').strip()
     if not content:
@@ -118,8 +111,6 @@ def get_comments(request, article_id):
     user = request.user_obj
 
     article = get_object_or_404(Article, id=article_id)
-    if article.status != 'published' and article.author_id != user.id:
-        return JsonResponse({'success': False, 'error': '文章不存在或尚未发布。'}, status=404)
 
     comments = (
         Comment.objects
@@ -133,6 +124,7 @@ def get_comments(request, article_id):
         return {
             'id': c.id,
             'author': c.author.username,
+            'author_id': c.author_id,
             'author_initial': c.author.username[0].upper(),
             'content': c.content,
             'created_at': c.created_at.strftime('%Y-%m-%d %H:%M'),
@@ -142,4 +134,58 @@ def get_comments(request, article_id):
     return JsonResponse({
         'success': True,
         'comments': [serialize_comment(c) for c in comments],
+    })
+
+
+@login_required
+@require_http_methods(['POST'])
+def delete_comment(request, comment_id):
+    """删除评论或回复（AJAX）—— 作者本人或超级用户可删除"""
+    user = request.user_obj
+
+    comment = get_object_or_404(Comment, id=comment_id)
+
+    # 校验：评论作者本人或超级用户可以删除
+    if comment.author_id != user.id and not user.superuser:
+        return JsonResponse({'success': False, 'error': '你只能删除自己的评论。'}, status=403)
+
+    # 获取所属文章 ID，用于后续校验（可选）
+    article_id = comment.article_id
+
+    comment.delete()
+
+    return JsonResponse({
+        'success': True,
+        'article_id': article_id,
+    })
+
+
+@login_required
+def search_articles(request):
+    """搜索文章 — 按标题、内容、分类检索"""
+    user = request.user_obj
+    query = request.GET.get('q', '').strip()
+
+    results = []
+    if query:
+        results = (
+            Article.objects
+            .select_related('author')
+            .prefetch_related('categories')
+            .annotate(comment_count=Count('comments'))
+            .filter(
+                Q(title__icontains=query)
+                | Q(content__icontains=query)
+                | Q(categories__name__icontains=query)
+            )
+            .distinct()
+            .order_by('-created_at')
+        )
+
+    return render(request, 'search_results.html', {
+        'username': user.username,
+        'email': user.email,
+        'search_query': query,
+        'articles': results,
+        'results_count': len(results),
     })

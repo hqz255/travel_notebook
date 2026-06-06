@@ -12,8 +12,8 @@ class ArticleCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):
-    list_display = ['title', 'author', 'status', 'category_names_display', 'views_count', 'created_at']
-    list_filter = ['status', 'categories', 'created_at']
+    list_display = ['title', 'author', 'category_names_display', 'views_count', 'created_at']
+    list_filter = ['categories', 'created_at']
     search_fields = ['title', 'content', 'author__username']
     filter_horizontal = ['categories']
     readonly_fields = ['views_count', 'created_at', 'updated_at']

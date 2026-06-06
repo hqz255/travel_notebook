@@ -24,11 +24,6 @@ class ArticleCategory(models.Model):
 
 class Article(models.Model):
     """文章表"""
-    STATUS_CHOICES = (
-        ('draft', '草稿'),
-        ('published', '已发布'),
-    )
-
     title = models.CharField(max_length=200, verbose_name='文章标题')
     content = models.TextField(verbose_name='文章内容')
     author = models.ForeignKey(
@@ -43,12 +38,6 @@ class Article(models.Model):
         verbose_name='文章分类',
     )
     images = models.JSONField(default=list, blank=True, verbose_name='图片列表')
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default='draft',
-        verbose_name='发布状态',
-    )
     views_count = models.PositiveIntegerField(default=0, verbose_name='浏览量')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
@@ -59,7 +48,6 @@ class Article(models.Model):
         verbose_name_plural = verbose_name
         ordering = ['-created_at']
         indexes = [
-            models.Index(fields=['status', '-created_at']),
             models.Index(fields=['author', '-created_at']),
         ]
 
