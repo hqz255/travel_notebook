@@ -1,0 +1,822 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel memories - 我的每日</title>
+    <link rel="stylesheet" href="{% static 'bootstrap/bootstrap.min.css' %}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f5f6fa;
+        }
+
+        /* ========== 导航栏样式（与 Product_homepage 一致） ========== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .navbar .nav-link {
+            color: #fff !important;
+            font-size: 15px;
+            margin: 0 12px;
+            transition: color 0.3s;
+        }
+
+        .navbar .nav-link:hover {
+            color: #00d4ff !important;
+        }
+
+        .navbar .navbar-brand {
+            color: #fff !important;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .navbar .navbar-brand:hover {
+            color: #00d4ff !important;
+        }
+
+        /* ========== 用户头像区域 ========== */
+        .avatar-wrapper {
+            position: relative;
+            margin-left: 28px;
+            cursor: pointer;
+        }
+
+        .avatar-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            transition: border-color 0.3s, transform 0.3s;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .avatar-wrapper:hover .avatar-img {
+            border-color: #00d4ff;
+            transform: scale(1.08);
+        }
+
+        /* 默认头像占位（无图片时显示首字母） */
+        .avatar-placeholder {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .avatar-wrapper:hover .avatar-placeholder {
+            border-color: #fff;
+            transform: scale(1.08);
+        }
+
+        /* 头像下拉菜单 */
+        .avatar-dropdown {
+            position: absolute;
+            right: 0;
+            top: 52px;
+            min-width: 160px;
+            background: rgba(30, 30, 50, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-8px);
+            transition: opacity 0.25s, visibility 0.25s, transform 0.25s;
+            z-index: 1001;
+        }
+
+        .avatar-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .avatar-dropdown .dropdown-header {
+            padding: 14px 18px 8px;
+            color: #ccc;
+            font-size: 13px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .avatar-dropdown .dropdown-header strong {
+            color: #fff;
+            font-size: 15px;
+        }
+
+        .avatar-dropdown .dropdown-item {
+            padding: 11px 18px;
+            color: #ddd;
+            font-size: 14px;
+            text-decoration: none;
+            display: block;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .avatar-dropdown .dropdown-item:hover {
+            background: rgba(0, 212, 255, 0.15);
+            color: #00d4ff;
+        }
+
+        .avatar-dropdown .dropdown-divider {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* ========== 主体内容 ========== */
+        .main-content {
+            padding-top: 80px;
+            min-height: 100vh;
+            background: #fff;
+        }
+
+        /* ========== 发布表单区域 ========== */
+        .publish-section {
+            padding: 40px 0 60px;
+        }
+
+        .publish-section .section-header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .publish-section .section-header h1 {
+            font-size: 30px;
+            font-weight: bold;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+
+        .publish-section .section-header p {
+            font-size: 15px;
+            color: #999;
+        }
+
+        .publish-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 36px 40px;
+            box-shadow: 0 2px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .publish-card .form-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+
+        .publish-card .form-control,
+        .publish-card .form-select {
+            border: 1.5px solid #e8e8e8;
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 15px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            background: #fafbfc;
+        }
+
+        .publish-card .form-control:focus,
+        .publish-card .form-select:focus {
+            border-color: #00d4ff;
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+            background: #fff;
+            outline: none;
+        }
+
+        .publish-card textarea.form-control {
+            min-height: 260px;
+            resize: vertical;
+            line-height: 1.8;
+        }
+
+        /* 图片上传区域 */
+        .image-upload-wrapper {
+            border: 2px dashed #ddd;
+            border-radius: 12px;
+            padding: 24px;
+            background: #fafbfc;
+            transition: border-color 0.3s, background 0.3s;
+        }
+
+        .image-upload-wrapper:hover {
+            border-color: #00d4ff;
+            background: rgba(0, 212, 255, 0.02);
+        }
+
+        .image-upload-wrapper .upload-hint {
+            text-align: center;
+            color: #bbb;
+            cursor: pointer;
+            padding: 20px 0;
+        }
+
+        .image-upload-wrapper .upload-hint .upload-icon {
+            font-size: 40px;
+            margin-bottom: 8px;
+        }
+
+        .image-upload-wrapper .upload-hint p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .image-upload-wrapper .upload-hint small {
+            color: #ccc;
+        }
+
+        .image-upload-wrapper .upload-count {
+            text-align: center;
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 16px;
+        }
+
+        .image-upload-wrapper .upload-count .count-current {
+            font-weight: bold;
+            color: #00d4ff;
+            font-size: 18px;
+        }
+
+        /* 图片预览网格 */
+        .image-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .image-preview-item {
+            position: relative;
+            aspect-ratio: 4 / 3;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #eef1f5;
+            border: 2px solid transparent;
+            transition: border-color 0.3s;
+        }
+
+        .image-preview-item:hover {
+            border-color: #00d4ff;
+        }
+
+        .image-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-preview-item .img-delete-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.55);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 26px;
+            text-align: center;
+            transition: background 0.3s, transform 0.2s;
+            padding: 0;
+        }
+
+        .image-preview-item .img-delete-btn:hover {
+            background: rgba(255, 71, 87, 0.85);
+            transform: scale(1.1);
+        }
+
+        .image-preview-item .img-order-badge {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 24px;
+        }
+
+        /* 添加更多按钮 */
+        .add-more-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 12px;
+            border: 1.5px dashed #ddd;
+            border-radius: 10px;
+            background: transparent;
+            color: #aaa;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            gap: 6px;
+        }
+
+        .add-more-btn:hover {
+            border-color: #00d4ff;
+            color: #00d4ff;
+            background: rgba(0, 212, 255, 0.03);
+        }
+
+        .add-more-btn.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* 分类标签选择 */
+        .category-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .category-options .category-chip {
+            padding: 8px 20px;
+            border-radius: 22px;
+            font-size: 14px;
+            cursor: pointer;
+            border: 1.5px solid #e8e8e8;
+            background: #fafbfc;
+            color: #666;
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .category-options .category-chip:hover {
+            border-color: #00d4ff;
+            color: #00d4ff;
+        }
+
+        .category-options .category-chip.selected {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        /* 提交按钮 */
+        .btn-submit-publish {
+            width: 100%;
+            padding: 14px 0;
+            font-size: 17px;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn-submit-publish:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 212, 255, 0.35);
+        }
+
+        .btn-draft {
+            width: 100%;
+            padding: 14px 0;
+            font-size: 17px;
+            font-weight: 600;
+            color: #555;
+            text-align: center;
+            background: #f5f6fa;
+            border: 1.5px solid #e8e8e8;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-draft:hover {
+            background: #ebedf2;
+            border-color: #ccc;
+        }
+
+        /* ========== 页脚 ========== */
+        .site-footer {
+            background: #1a1a2e;
+            color: rgba(255,255,255,0.5);
+            text-align: center;
+            padding: 24px 0;
+            font-size: 14px;
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 768px) {
+            .main-content {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+            .publish-section .section-header h1 {
+                font-size: 24px;
+            }
+            .publish-card {
+                padding: 24px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== 导航栏（与 Product_homepage 一致） ==================== -->
+    {% include 'includes/navbar_authenticated.html' with active_page='write_memory' %}
+
+    <!-- ==================== 主体内容 ==================== -->
+    <div class="main-content">
+
+        <!-- 发布表单区域 -->
+        <section class="publish-section">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <!-- 标题区 -->
+                        <div class="section-header">
+                            <h1>✏️ 发布你的故事</h1>
+                            <p>记录每一次旅行，分享每一份感动</p>
+                        </div>
+
+                        <!-- 错误/成功消息 -->
+                        {% if error %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            ⚠️ {{ error }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="关闭"></button>
+                        </div>
+                        {% endif %}
+                        {% if success %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ success }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="关闭"></button>
+                        </div>
+                        {% endif %}
+
+                        <!-- 表单卡片 -->
+                        <div class="publish-card">
+                            <form id="publishForm" method="POST" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" id="actionInput" value="publish">
+
+                                <!-- 文章标题 -->
+                                <div class="mb-4">
+                                    <label for="postTitle" class="form-label">文章标题</label>
+                                    <input type="text" class="form-control" id="postTitle" name="title"
+                                        placeholder="给你的故事起个吸引人的标题…" maxlength="100" required
+                                        value="{{ form_data.title|default:'' }}">
+                                </div>
+
+                                <!-- 文章分类 -->
+                                <div class="mb-4">
+                                    <label class="form-label">文章分类</label>
+                                    <div class="category-options" id="categoryOptions">
+                                        {% for cat in categories %}
+                                        <span class="category-chip" data-category-id="{{ cat.id }}">{{ cat.name }}</span>
+                                        {% empty %}
+                                        <span style="color:#999;">暂无可用分类</span>
+                                        {% endfor %}
+                                    </div>
+                                    <input type="hidden" name="category_ids" id="categoryInput" value="{{ form_data.category_ids|default:'' }}">
+                                </div>
+
+                                <!-- 上传图片（最多9张） -->
+                                <div class="mb-4">
+                                    <label class="form-label">上传图片 <small style="color:#999;font-weight:400;">（最多9张）</small></label>
+                                    <div class="image-upload-wrapper" id="imageUploadWrapper">
+                                        <!-- 预览网格 -->
+                                        <div class="image-preview-grid" id="imagePreviewGrid"></div>
+
+                                        <!-- 上传区域 -->
+                                        <div class="upload-hint" id="uploadHint" onclick="document.getElementById('imageInput').click()">
+                                            <div class="upload-icon">🖼️</div>
+                                            <p>点击上传图片</p>
+                                            <small>支持 JPG / PNG / WEBP / GIF / BMP，单张最大 10 MB</small>
+                                        </div>
+
+                                        <!-- 添加更多 -->
+                                        <button type="button" class="add-more-btn" id="addMoreBtn" onclick="document.getElementById('imageInput').click()">
+                                            ➕ 添加更多图片
+                                        </button>
+
+                                        <!-- 计数 -->
+                                        <div class="upload-count" id="uploadCount" style="display:none;">
+                                            已选择 <span class="count-current" id="countNum">0</span> / 9 张
+                                        </div>
+                                    </div>
+                                    <input type="file" id="imageInput" name="images" accept="image/*" multiple style="display:none;">
+                                </div>
+
+                                <!-- 文章内容 -->
+                                <div class="mb-4">
+                                    <label for="postContent" class="form-label">文章内容</label>
+                                    <textarea class="form-control" id="postContent" name="content"
+                                        placeholder="写下你的旅行故事…&#10;&#10;可以分享你的见闻、感受、攻略，或者任何想记录下来的美好瞬间。&#10;&#10;提示：详细的描述和真实的感受，更容易引起共鸣哦～"
+                                        rows="12" required>{{ form_data.content|default:'' }}</textarea>
+                                </div>
+
+                                <!-- 按钮组 -->
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-6">
+                                        <button type="button" class="btn-draft" id="btnDraft">
+                                            💾 保存草稿
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <button type="submit" class="btn-submit-publish" id="btnPublish">
+                                            🚀 立即发布
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="site-footer">
+        <div class="container">
+            &copy; 2026 Travel memories. All rights reserved.
+        </div>
+    </footer>
+
+
+    <script src="{% static 'Jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'bootstrap/bootstrap.bundle.min.js' %}"></script>
+    <script>
+    $(function () {
+        // ========== 头像下拉菜单切换 ==========
+        var $avatarWrapper = $('#avatarWrapper');
+        var $dropdown = $('#avatarDropdown');
+
+        $avatarWrapper.on('click', function (e) {
+            e.stopPropagation();
+            $dropdown.toggleClass('show');
+        });
+
+        // 点击页面其他区域关闭下拉菜单
+        $(document).on('click', function () {
+            $dropdown.removeClass('show');
+        });
+
+        // 点击下拉菜单内部不关闭
+        $dropdown.on('click', function (e) {
+            e.stopPropagation();
+        });
+
+        // ========== 分类标签选择（多选，使用数据库 ID） ==========
+
+        // 更新隐藏域：将所有选中的分类 ID 用逗号拼接
+        function syncCategoryInput() {
+            var selected = [];
+            $('#categoryOptions .category-chip.selected').each(function () {
+                selected.push($(this).data('category-id'));
+            });
+            $('#categoryInput').val(selected.join(','));
+        }
+
+        // 初始化：根据隐藏域的值回填选中状态（用于服务端校验失败后回填）
+        var initialCategory = $('#categoryInput').val();
+        if (initialCategory) {
+            var initialList = initialCategory.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+            $('#categoryOptions .category-chip').each(function () {
+                var catId = String($(this).data('category-id'));
+                if (initialList.indexOf(catId) !== -1) {
+                    $(this).addClass('selected');
+                }
+            });
+        }
+
+        // 点击切换选中状态
+        $('#categoryOptions').on('click', '.category-chip', function () {
+            $(this).toggleClass('selected');
+            syncCategoryInput();
+        });
+
+        // ========== 多图片上传管理 ==========
+        var MAX_IMAGES = 9;
+        var MAX_IMAGE_SIZE = 10 * 1024 * 1024;  // 10 MB（与后端一致）
+        var ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp'];
+        var ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp'];
+        var imageFiles = [];  // 存储已选择的图片 File 对象
+
+        function showImageError(msg) {
+            $('.image-error').remove();
+            var errDiv = $('<div class="image-error alert alert-danger py-2 px-3 mb-2" style="font-size:14px;">⚠️ ' + msg + '</div>');
+            $('#imageUploadWrapper').before(errDiv);
+        }
+
+        function clearImageError() {
+            $('.image-error').remove();
+        }
+
+        function updateImageUI() {
+            var count = imageFiles.length;
+
+            // 更新预览网格
+            var $grid = $('#imagePreviewGrid');
+            $grid.empty();
+            imageFiles.forEach(function (file, index) {
+                var reader = new FileReader();
+                reader.onload = function (ev) {
+                    var item = $(
+                        '<div class="image-preview-item" data-index="' + index + '">' +
+                            '<span class="img-order-badge">' + (index + 1) + '</span>' +
+                            '<img src="' + ev.target.result + '" alt="图片 ' + (index + 1) + '">' +
+                            '<button type="button" class="img-delete-btn" data-index="' + index + '" title="移除">✕</button>' +
+                        '</div>'
+                    );
+                    // 替换或追加（避免重复）
+                    var existing = $grid.find('.image-preview-item[data-index="' + index + '"]');
+                    if (existing.length) {
+                        existing.replaceWith(item);
+                    } else {
+                        $grid.append(item);
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // 显示/隐藏元素
+            if (count > 0) {
+                $('#uploadHint').hide();
+                $('#uploadCount').show();
+                $('#countNum').text(count);
+                $grid.show();
+            } else {
+                $('#uploadHint').show();
+                $('#uploadCount').hide();
+                $grid.hide();
+            }
+
+            // 达到上限时禁用添加
+            if (count >= MAX_IMAGES) {
+                $('#addMoreBtn').addClass('disabled');
+            } else {
+                $('#addMoreBtn').removeClass('disabled');
+            }
+        }
+
+        // 点击删除按钮 — 移除图片
+        $('#imagePreviewGrid').on('click', '.img-delete-btn', function (e) {
+            e.stopPropagation();
+            var index = parseInt($(this).data('index'));
+            imageFiles.splice(index, 1);
+            clearImageError();
+            updateImageUI();
+        });
+
+        function isValidImageFile(file) {
+            // 1. 文件大小检查（前端初步拦截，后端会再次严格校验）
+            if (file.size > MAX_IMAGE_SIZE) {
+                var sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+                var maxMB = (MAX_IMAGE_SIZE / (1024 * 1024)).toFixed(0);
+                return '文件过大（' + sizeMB + ' MB），单张图片不能超过 ' + maxMB + ' MB';
+            }
+            if (file.size === 0) {
+                return '文件为空，请选择有效的图片';
+            }
+            // 2. MIME 类型检查（浏览器声明值，仅供参考；后端会通过魔数做真实检测）
+            if (file.type && ALLOWED_MIME_TYPES.indexOf(file.type) === -1) {
+                return '文件类型「' + file.type + '」不是有效的图片格式';
+            }
+            // 3. 扩展名检查
+            var fileName = file.name.toLowerCase();
+            var ext = fileName.substring(fileName.lastIndexOf('.'));
+            if (!ext || ALLOWED_EXTENSIONS.indexOf(ext) === -1) {
+                return '不支持的文件格式「' + (ext || '无后缀') + '」';
+            }
+            return null;  // 合法
+        }
+
+        // ========== 图片选择处理 ==========
+        $('#imageInput').on('change', function (e) {
+            clearImageError();
+            var files = Array.from(e.target.files);
+
+            // 检查是否超过上限
+            var remaining = MAX_IMAGES - imageFiles.length;
+            if (files.length > remaining) {
+                showImageError('最多只能上传 ' + MAX_IMAGES + ' 张图片，当前已有 ' + imageFiles.length + ' 张，还能添加 ' + remaining + ' 张');
+                $(this).val('');
+                return;
+            }
+
+            // 逐个校验
+            for (var i = 0; i < files.length; i++) {
+                var err = isValidImageFile(files[i]);
+                if (err) {
+                    showImageError('「' + files[i].name + '」' + err);
+                    $(this).val('');
+                    return;
+                }
+            }
+
+            // 全部通过，添加到列表
+            imageFiles = imageFiles.concat(files);
+            updateImageUI();
+            $(this).val('');  // 清空 input，允许重复选择同一文件
+        });
+
+        // ========== 表单提交前确认 ==========
+        $('#publishForm').on('submit', function (e) {
+            var action = $('#actionInput').val();
+            var title = $('#postTitle').val().trim();
+            var content = $('#postContent').val().trim();
+
+            // 发布时需要标题和内容必填
+            if (action === 'publish') {
+                if (!title) {
+                    e.preventDefault();
+                    alert('请输入文章标题');
+                    return;
+                }
+                if (!content) {
+                    e.preventDefault();
+                    alert('请输入文章内容');
+                    return;
+                }
+                if (!confirm('确认发布这篇文章吗？')) {
+                    e.preventDefault();
+                    return;
+                }
+            }
+
+            // 草稿也需要至少标题或内容
+            if (action === 'draft' && !title && !content) {
+                e.preventDefault();
+                alert('请至少填写标题或内容再保存草稿');
+                return;
+            }
+
+            // 将已选择的所有图片同步到 file input 中
+            var dt = new DataTransfer();
+            imageFiles.forEach(function(file) {
+                dt.items.add(file);
+            });
+            $('#imageInput')[0].files = dt.files;
+        });
+
+        // 发布按钮点击时确保 action 为 publish
+        $('#btnPublish').on('click', function () {
+            $('#actionInput').val('publish');
+        });
+
+        // ========== 保存草稿按钮 ==========
+        $('#btnDraft').on('click', function () {
+            var title = $('#postTitle').val().trim();
+            var content = $('#postContent').val().trim();
+            if (!title && !content) {
+                alert('请至少填写标题或内容再保存草稿');
+                return;
+            }
+            // 将已选择的所有图片同步到 file input 中
+            var dt = new DataTransfer();
+            imageFiles.forEach(function(file) {
+                dt.items.add(file);
+            });
+            $('#imageInput')[0].files = dt.files;
+
+            // 设置 action 为 draft
+            $('#actionInput').val('draft');
+            $('#publishForm')[0].submit();
+        });
+    });
+    </script>
+</body>
+</html>

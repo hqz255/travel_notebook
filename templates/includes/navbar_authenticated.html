@@ -1,0 +1,57 @@
+<!-- 已登录用户共享导航栏 -->
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'product_homepage' %}">Travel memories</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="切换导航">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- 中间导航链接（当前页面不显示对应的链接，通过 hide_nav_links 控制是否全部隐藏） -->
+            {% if not hide_nav_links %}
+            <ul class="navbar-nav mx-auto">
+                {% if active_page != 'write_memory' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'record_memories:wmmr' %}">📝 写回忆</a>
+                </li>
+                {% endif %}
+                {% if active_page != 'explore' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'explore_world:explore_world' %}">🌍 探索世界</a>
+                </li>
+                {% endif %}
+                {% if active_page != 'interact' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'interact:interact' %}">💬 互动交流</a>
+                </li>
+                {% endif %}
+                {% if active_page != 'footprint' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'travel_footprint:travel_footprint' %}">🗺️ 旅行足迹</a>
+                </li>
+                {% endif %}
+            </ul>
+            {% endif %}
+            <!-- 用户头像 -->
+            <div class="avatar-wrapper ms-auto" id="avatarWrapper">
+                <!-- 默认显示首字母占位，有头像时可替换为 <img> -->
+                <div class="avatar-placeholder" id="avatarPlaceholder" title="用户菜单">{{ username|slice:":1"|upper }}</div>
+                <!-- 如果用户有头像图片，用下面这行替换上面那行 -->
+                <!-- <img class="avatar-img" id="avatarImg" src="{% static 'images/default_avatar.png' %}" alt="头像" title="用户菜单"> -->
+
+                <!-- 下拉菜单 -->
+                <div class="avatar-dropdown" id="avatarDropdown">
+                    <div class="dropdown-header">
+                        <strong id="dropdownUsername">{{ username }}</strong>
+                        <br><small id="dropdownEmail">{{ email }}</small>
+                    </div>
+                    <a class="dropdown-item" href="{% url 'record_memories:wmmr' %}">📋 我的回忆</a>
+                    <a class="dropdown-item" href="#">⭐ 我的收藏</a>
+                    <a class="dropdown-item" href="#">⚙️ 账号设置</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="{% url 'logout' %}" style="color:#ff6b6b;">🚪 退出登录</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>

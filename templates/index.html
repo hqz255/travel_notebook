@@ -208,6 +208,49 @@
             border-color: #00d4ff;
         }
 
+        .form-hint {
+            display: block;
+            margin-top: 6px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.55);
+            padding-left: 4px;
+            transition: color 0.3s;
+        }
+
+        .form-hint.error {
+            color: #ff6b6b;
+        }
+
+        .form-input.input-error {
+            border-color: #ff6b6b;
+        }
+
+        /* 记住我复选框 */
+        .remember-group {
+            margin-bottom: 22px;
+        }
+
+        .remember-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .remember-label input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #00d4ff;
+            cursor: pointer;
+        }
+
+        .remember-label span {
+            line-height: 1;
+        }
+
         /* 功能卡片区域 */
         .features-section {
             width: 100%;
@@ -299,7 +342,7 @@
         <!-- 登录表单 -->
         <div class="login-card">
             <h3 class="login-title">用户登录</h3>
-            <form class="login-form" action="{% url 'login' %}" method="post">
+            <form class="login-form" action="{% url 'login:login' %}" method="post">
                 {% csrf_token %}
 
                 {% if errors %}
@@ -315,6 +358,7 @@
                     <div class="form-group">
                         <input type="email" class="form-input" name="email" id="email"
                                placeholder="请输入邮箱" value="{{ form_data.email|default:'' }}" required>
+                        {% comment %} <small class="form-hint" id="emailHint">请输入有效的邮箱地址</small> {% endcomment %}
                     </div>
                     <div class="form-group">
                         <input type="password" class="form-input" name="password"
@@ -325,9 +369,15 @@
                                placeholder="请输入验证码" required>
                         <button type="button" class="btn-verify" id="sendCodeBtn">发送验证码</button>
                     </div>
+                    <div class="form-group remember-group">
+                        <label class="remember-label">
+                            <input type="checkbox" name="remember_me" value="1">
+                            <span>记住我</span>
+                        </label>
+                    </div>
                     <button type="submit" class="btn-login">立即登录</button>
                     <div class="register-link">
-                        没有账号，<a href="/register/">立即注册</a>
+                        没有账号，<a href="{% url 'register:register' %}">立即注册</a>
                     </div>
                 </form>
         </div>
@@ -367,6 +417,47 @@
     <script src="{% static 'bootstrap/bootstrap.bundle.min.js' %}"></script>
     <script>
         $(function () {
+            // ========== 邮箱校验 ==========
+            var $email = $('#email');
+            var $emailHint = $('#emailHint');
+            var EMAIL_PATTERN = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+            function validateEmail() {
+                var val = $email.val().trim();
+                var error = null;
+
+                if (!val) {
+                    error = '请输入邮箱地址';
+                } else if (!EMAIL_PATTERN.test(val)) {
+                    error = '请输入有效的邮箱地址';
+                }
+
+                if (error) {
+                    $emailHint.text(error).addClass('error');
+                    $email.addClass('input-error');
+                    return false;
+                } else {
+                    $emailHint.text('请输入有效的邮箱地址').removeClass('error');
+                    $email.removeClass('input-error');
+                    return true;
+                }
+            }
+
+            $email.on('blur', validateEmail);
+            $email.on('input', function () {
+                if ($emailHint.hasClass('error')) {
+                    validateEmail();
+                }
+            });
+
+            // 提交时校验邮箱
+            $('.login-form').on('submit', function (e) {
+                if (!validateEmail()) {
+                    e.preventDefault();
+                    $email.focus();
+                }
+            });
+
             var $sendBtn = $('#sendCodeBtn');
             var countdown = 0;
             var timer = null;
@@ -384,7 +475,7 @@
                 $sendBtn.text('发送中...').prop('disabled', true);
 
                 $.ajax({
-                    url: "{% url 'send_login_code' %}",
+                    url: "{% url 'login:send_login_code' %}",
                     type: 'POST',
                     data: { email: email },
                     headers: { 'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val() },

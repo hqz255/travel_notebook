@@ -44,6 +44,12 @@ def login_view(request):
                     request.session['user_id'] = user.id
                     request.session['username'] = user.username
 
+                    # 记住我：勾选后会话保持 7 天
+                    if request.POST.get('remember_me') == '1':
+                        request.session.set_expiry(7 * 24 * 60 * 60)  # 7 天
+                    else:
+                        request.session.set_expiry(0)  # 浏览器关闭即失效
+
                     # 支持 next 参数：登录后跳转到目标页面
                     next_url = request.POST.get('next') or request.GET.get('next')
                     if next_url:

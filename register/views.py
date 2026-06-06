@@ -42,12 +42,10 @@ def register_view(request):
         # --- 校验密码 ---
         if not password:
             errors.append('请输入密码')
-        elif len(password) < 8:
-            errors.append('密码长度不能少于8位')
-        elif not re.search(r'[a-zA-Z]', password):
-            errors.append('密码必须包含字母')
-        elif not re.search(r'[0-9]', password):
-            errors.append('密码必须包含数字')
+        elif len(password) < 6 or len(password) > 18:
+            errors.append('密码长度应为6-18个字符')
+        elif not re.match(r'^[a-zA-Z0-9_]+$', password):
+            errors.append('密码只能由字母、数字和下划线组成')
 
         # --- 校验确认密码 ---
         if password != confirm_password:

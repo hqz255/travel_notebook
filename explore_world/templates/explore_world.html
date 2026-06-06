@@ -1,0 +1,201 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel memories - 探索世界</title>
+    <link rel="stylesheet" href="{% static 'bootstrap/bootstrap.min.css' %}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #f5f6fa; }
+
+        .navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+        .navbar .nav-link { color: #fff !important; font-size: 15px; margin: 0 12px; transition: color 0.3s; }
+        .navbar .nav-link:hover { color: #00d4ff !important; }
+        .navbar .navbar-brand { color: #fff !important; font-size: 22px; font-weight: bold; }
+        .navbar .navbar-brand:hover { color: #00d4ff !important; }
+
+        .avatar-wrapper { position: relative; margin-left: 28px; cursor: pointer; }
+        .avatar-placeholder {
+            width: 40px; height: 40px; border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: #fff; font-size: 18px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+        .avatar-wrapper:hover .avatar-placeholder { border-color: #fff; transform: scale(1.08); }
+        .avatar-dropdown {
+            position: absolute; right: 0; top: 52px; min-width: 160px;
+            background: rgba(30, 30, 50, 0.95); backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35); overflow: hidden;
+            opacity: 0; visibility: hidden; transform: translateY(-8px);
+            transition: opacity 0.25s, visibility 0.25s, transform 0.25s; z-index: 1001;
+        }
+        .avatar-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        .avatar-dropdown .dropdown-header { padding: 14px 18px 8px; color: #ccc; font-size: 13px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .avatar-dropdown .dropdown-header strong { color: #fff; font-size: 15px; }
+        .avatar-dropdown .dropdown-item { padding: 11px 18px; color: #ddd; font-size: 14px; text-decoration: none; display: block; transition: background 0.2s, color 0.2s; }
+        .avatar-dropdown .dropdown-item:hover { background: rgba(0, 212, 255, 0.15); color: #00d4ff; }
+        .avatar-dropdown .dropdown-divider { border-top: 1px solid rgba(255, 255, 255, 0.1); }
+
+        .main-content { padding-top: 80px; min-height: 100vh; }
+        .page-hero {
+            background: linear-gradient(135deg, #0a1628 0%, #0d2137 50%, #1a3a4a 100%);
+            color: #fff; text-align: center; padding: 80px 0 60px;
+        }
+        .page-hero h1 { font-size: 42px; font-weight: bold; margin-bottom: 16px; }
+        .page-hero p { font-size: 18px; opacity: 0.75; margin: 0; }
+
+        /* ========== 文章列表区域 ========== */
+        .articles-section { padding: 40px 0 80px; }
+        .article-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 28px 32px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .article-card:hover { transform: translateY(-4px); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12); }
+        .article-card .article-title {
+            font-size: 22px; font-weight: bold; color: #1a1a2e;
+            margin-bottom: 10px;
+        }
+        .article-card .article-meta {
+            font-size: 13px; color: #999; margin-bottom: 14px;
+            display: flex; align-items: center; flex-wrap: wrap; gap: 8px 18px;
+        }
+        .article-card .article-meta span { display: inline-flex; align-items: center; gap: 4px; }
+        .article-card .article-excerpt {
+            color: #555; font-size: 15px; line-height: 1.7; margin-bottom: 16px;
+        }
+        .article-card .article-footer {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 10px;
+        }
+        .category-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #e6f4ff, #d6ecff);
+            color: #1890ff;
+            padding: 4px 12px; border-radius: 20px;
+            font-size: 12px; font-weight: 500;
+        }
+        .category-badge + .category-badge { margin-left: 6px; }
+        .read-more-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: #fff; padding: 8px 22px; border-radius: 22px;
+            font-size: 14px; text-decoration: none;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        .read-more-btn:hover { opacity: 0.85; transform: scale(1.03); color: #fff; }
+        .status-published {
+            display: inline-block;
+            background: #e8f5e9; color: #27ae60;
+            padding: 2px 10px; border-radius: 10px; font-size: 12px;
+        }
+
+        /* 空状态 */
+        .empty-state { text-align: center; padding: 80px 20px; }
+        .empty-state .empty-icon { font-size: 64px; margin-bottom: 20px; }
+        .empty-state h3 { font-size: 22px; margin-bottom: 10px; color: #333; }
+        .empty-state p { color: #999; font-size: 15px; margin-bottom: 24px; }
+        .empty-state .btn-write {
+            display: inline-block;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: #fff; padding: 10px 28px; border-radius: 24px;
+            font-size: 15px; text-decoration: none; transition: opacity 0.3s;
+        }
+        .empty-state .btn-write:hover { opacity: 0.85; color: #fff; }
+
+        /* 统计栏 */
+        .stats-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 12px; margin-bottom: 24px;
+        }
+        .stats-bar .total-count { font-size: 15px; color: #555; }
+        .stats-bar .total-count strong { color: #00d4ff; font-size: 18px; }
+
+        .site-footer { background: #1a1a2e; color: rgba(255,255,255,0.5); text-align: center; padding: 24px 0; font-size: 14px; }
+    </style>
+</head>
+<body>
+    {% include 'includes/navbar_authenticated.html' with active_page='explore' %}
+
+    <div class="main-content">
+        <section class="page-hero">
+            <div class="container">
+                <h1>🌍 探索世界</h1>
+                <p>发现热门旅行目的地，获取最新旅游灵感</p>
+            </div>
+        </section>
+        <section class="articles-section">
+            <div class="container">
+                {% if articles %}
+                <div class="stats-bar">
+                    <div class="total-count">
+                        共 <strong>{{ articles|length }}</strong> 篇文章
+                    </div>
+                    <a href="{% url 'record_memories:wmmr' %}" class="read-more-btn">📝 写一篇新文章</a>
+                </div>
+
+                {% for article in articles %}
+                <div class="article-card">
+                    <div class="article-title">
+                        {{ article.title }}
+                        <span class="status-published" style="margin-left:10px;">已发布</span>
+                    </div>
+                    <div class="article-meta">
+                        <span>👤 {{ article.author.username }}</span>
+                        <span>📅 {{ article.created_at|date:"Y-m-d H:i" }}</span>
+                        <span>👀 {{ article.views_count }} 次阅读</span>
+                    </div>
+                    <div class="article-excerpt">
+                        {{ article.content|truncatechars:200 }}
+                    </div>
+                    <div class="article-footer">
+                        <div>
+                            {% for cat in article.categories.all %}
+                            <span class="category-badge">{{ cat.name }}</span>
+                            {% endfor %}
+                        </div>
+                        <a href="#" class="read-more-btn">阅读全文 →</a>
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <h3>还没有文章</h3>
+                    <p>成为第一个分享旅行回忆的人吧！</p>
+                    <a href="{% url 'record_memories:wmmr' %}" class="btn-write">📝 写一篇文章</a>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container">&copy; 2026 Travel memories. All rights reserved.</div>
+    </footer>
+
+    <script src="{% static 'Jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'bootstrap/bootstrap.bundle.min.js' %}"></script>
+    <script>
+    $(function () {
+        var $dropdown = $('#avatarDropdown');
+        $('#avatarWrapper').on('click', function (e) { e.stopPropagation(); $dropdown.toggleClass('show'); });
+        $(document).on('click', function () { $dropdown.removeClass('show'); });
+        $dropdown.on('click', function (e) { e.stopPropagation(); });
+    });
+    </script>
+</body>
+</html>

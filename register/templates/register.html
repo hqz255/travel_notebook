@@ -163,6 +163,23 @@
             color: #fff;
         }
 
+        .form-hint {
+            display: block;
+            margin-top: 6px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.55);
+            padding-left: 4px;
+            transition: color 0.3s;
+        }
+
+        .form-hint.error {
+            color: #ff6b6b;
+        }
+
+        .form-input.input-error {
+            border-color: #ff6b6b;
+        }
+
         .verify-group {
             display: flex;
             gap: 10px;
@@ -256,16 +273,20 @@
                 {% endif %}
 
                 <div class="form-group">
-                    <input type="text" class="form-input" name="username"
-                           placeholder="请输入用户名" value="{{ form_data.username|default:'' }}" required>
+                    <input type="text" class="form-input" name="username" id="username"
+                           placeholder="请输入用户名" value="{{ form_data.username|default:'' }}"
+                           minlength="2" maxlength="20" pattern="^[a-zA-Z0-9_]+$" required>
+                    <small class="form-hint" id="usernameHint">用户名由字母、数字或下划线组成，长度2-20个字符</small>
                 </div>
                 <div class="form-group">
                     <input type="email" class="form-input" name="email" id="email"
                            placeholder="请输入邮箱" value="{{ form_data.email|default:'' }}" required>
+                    <small class="form-hint" id="emailHint">请输入有效的邮箱地址</small>
                 </div>
                 <div class="form-group">
-                    <input type="password" class="form-input" name="password"
-                           placeholder="请输入密码" required>
+                    <input type="password" class="form-input" name="password" id="password"
+                           placeholder="请输入密码" minlength="6" maxlength="18" pattern="^[a-zA-Z0-9_]+$" required>
+                    <small class="form-hint" id="passwordHint">密码由字母、数字和下划线组成，长度6-18个字符</small>
                 </div>
                 <div class="form-group">
                     <input type="password" class="form-input" name="confirm_password"
@@ -292,6 +313,135 @@
     <script src="{% static 'bootstrap/bootstrap.bundle.min.js' %}"></script>
     <script>
         $(function () {
+            var $username = $('#username');
+            var $usernameHint = $('#usernameHint');
+
+            // 用户名校验规则
+            var USERNAME_PATTERN = /^[a-zA-Z0-9_]+$/;
+
+            function validateUsername() {
+                var val = $username.val().trim();
+                var error = null;
+
+                if (!val) {
+                    error = '请输入用户名';
+                } else if (val.length < 2 || val.length > 20) {
+                    error = '用户名长度应为2-20个字符';
+                } else if (!USERNAME_PATTERN.test(val)) {
+                    error = '用户名只能由字母、数字或下划线组成';
+                }
+
+                if (error) {
+                    $usernameHint.text(error).addClass('error');
+                    $username.addClass('input-error');
+                    return false;
+                } else {
+                    $usernameHint.text('用户名由字母、数字或下划线组成，长度2-20个字符').removeClass('error');
+                    $username.removeClass('input-error');
+                    return true;
+                }
+            }
+
+            // 失焦时校验
+            $username.on('blur', validateUsername);
+
+            // 输入时清除错误状态
+            $username.on('input', function () {
+                if ($usernameHint.hasClass('error')) {
+                    validateUsername();
+                }
+            });
+
+            // ========== 邮箱校验 ==========
+            var $email = $('#email');
+            var $emailHint = $('#emailHint');
+            var EMAIL_PATTERN = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+            function validateEmail() {
+                var val = $email.val().trim();
+                var error = null;
+
+                if (!val) {
+                    error = '请输入邮箱地址';
+                } else if (!EMAIL_PATTERN.test(val)) {
+                    error = '请输入有效的邮箱地址';
+                }
+
+                if (error) {
+                    $emailHint.text(error).addClass('error');
+                    $email.addClass('input-error');
+                    return false;
+                } else {
+                    $emailHint.text('请输入有效的邮箱地址').removeClass('error');
+                    $email.removeClass('input-error');
+                    return true;
+                }
+            }
+
+            $email.on('blur', validateEmail);
+            $email.on('input', function () {
+                if ($emailHint.hasClass('error')) {
+                    validateEmail();
+                }
+            });
+
+            // ========== 密码校验 ==========
+            var $password = $('#password');
+            var $passwordHint = $('#passwordHint');
+            var PASSWORD_PATTERN = /^[a-zA-Z0-9_]+$/;
+
+            function validatePassword() {
+                var val = $password.val();
+                var error = null;
+
+                if (!val) {
+                    error = '请输入密码';
+                } else if (val.length < 6 || val.length > 18) {
+                    error = '密码长度应为6-18个字符';
+                } else if (!PASSWORD_PATTERN.test(val)) {
+                    error = '密码只能由字母、数字和下划线组成';
+                }
+
+                if (error) {
+                    $passwordHint.text(error).addClass('error');
+                    $password.addClass('input-error');
+                    return false;
+                } else {
+                    $passwordHint.text('密码由字母、数字和下划线组成，长度6-18个字符').removeClass('error');
+                    $password.removeClass('input-error');
+                    return true;
+                }
+            }
+
+            $password.on('blur', validatePassword);
+            $password.on('input', function () {
+                if ($passwordHint.hasClass('error')) {
+                    validatePassword();
+                }
+            });
+
+            // 提交时校验所有字段
+            $('.register-form').on('submit', function (e) {
+                var valid = true;
+
+                if (!validateUsername()) {
+                    valid = false;
+                    $username.focus();
+                }
+                if (!validateEmail()) {
+                    if (valid) $email.focus();
+                    valid = false;
+                }
+                if (!validatePassword()) {
+                    if (valid) $password.focus();
+                    valid = false;
+                }
+
+                if (!valid) {
+                    e.preventDefault();
+                }
+            });
+
             var $sendBtn = $('#sendCodeBtn');
             var countdown = 0;
             var timer = null;
@@ -309,7 +459,7 @@
                 $sendBtn.text('发送中...').prop('disabled', true);
 
                 $.ajax({
-                    url: "{% url 'send_code' %}",
+                    url: "{% url 'register:send_code' %}",
                     type: 'POST',
                     data: { email: email },
                     headers: { 'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val() },

@@ -1,0 +1,97 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel memories - 互动交流</title>
+    <link rel="stylesheet" href="{% static 'bootstrap/bootstrap.min.css' %}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #f5f6fa; }
+
+        .navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+        .navbar .nav-link { color: #fff !important; font-size: 15px; margin: 0 12px; transition: color 0.3s; }
+        .navbar .nav-link:hover { color: #00d4ff !important; }
+        .navbar .navbar-brand { color: #fff !important; font-size: 22px; font-weight: bold; }
+        .navbar .navbar-brand:hover { color: #00d4ff !important; }
+
+        .avatar-wrapper { position: relative; margin-left: 28px; cursor: pointer; }
+        .avatar-placeholder {
+            width: 40px; height: 40px; border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: #fff; font-size: 18px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+        .avatar-wrapper:hover .avatar-placeholder { border-color: #fff; transform: scale(1.08); }
+        .avatar-dropdown {
+            position: absolute; right: 0; top: 52px; min-width: 160px;
+            background: rgba(30, 30, 50, 0.95); backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35); overflow: hidden;
+            opacity: 0; visibility: hidden; transform: translateY(-8px);
+            transition: opacity 0.25s, visibility 0.25s, transform 0.25s; z-index: 1001;
+        }
+        .avatar-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        .avatar-dropdown .dropdown-header { padding: 14px 18px 8px; color: #ccc; font-size: 13px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .avatar-dropdown .dropdown-header strong { color: #fff; font-size: 15px; }
+        .avatar-dropdown .dropdown-item { padding: 11px 18px; color: #ddd; font-size: 14px; text-decoration: none; display: block; transition: background 0.2s, color 0.2s; }
+        .avatar-dropdown .dropdown-item:hover { background: rgba(0, 212, 255, 0.15); color: #00d4ff; }
+        .avatar-dropdown .dropdown-divider { border-top: 1px solid rgba(255, 255, 255, 0.1); }
+
+        .main-content { padding-top: 80px; min-height: 100vh; }
+        .page-hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #fff; text-align: center; padding: 80px 0 60px;
+        }
+        .page-hero h1 { font-size: 42px; font-weight: bold; margin-bottom: 16px; }
+        .page-hero p { font-size: 18px; opacity: 0.75; margin: 0; }
+        .placeholder-section { padding: 60px 0; text-align: center; }
+        .placeholder-section .icon { font-size: 80px; margin-bottom: 24px; }
+        .placeholder-section h3 { font-size: 24px; color: #333; margin-bottom: 12px; }
+        .placeholder-section p { color: #999; font-size: 15px; }
+
+        .site-footer { background: #1a1a2e; color: rgba(255,255,255,0.5); text-align: center; padding: 24px 0; font-size: 14px; }
+    </style>
+</head>
+<body>
+    {% include 'includes/navbar_authenticated.html' with active_page='interact' %}
+
+    <div class="main-content">
+        <section class="page-hero">
+            <div class="container">
+                <h1>💬 互动交流</h1>
+                <p>与志同道合的旅友分享心得与建议</p>
+            </div>
+        </section>
+        <section class="placeholder-section">
+            <div class="container">
+                <div class="icon">💬</div>
+                <h3>社区功能即将上线</h3>
+                <p>这里将成为旅行爱好者们的交流天地，敬请期待！</p>
+            </div>
+        </section>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container">&copy; 2026 Travel memories. All rights reserved.</div>
+    </footer>
+
+    <script src="{% static 'Jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'bootstrap/bootstrap.bundle.min.js' %}"></script>
+    <script>
+    $(function () {
+        var $dropdown = $('#avatarDropdown');
+        $('#avatarWrapper').on('click', function (e) { e.stopPropagation(); $dropdown.toggleClass('show'); });
+        $(document).on('click', function () { $dropdown.removeClass('show'); });
+        $dropdown.on('click', function (e) { e.stopPropagation(); });
+    });
+    </script>
+</body>
+</html>

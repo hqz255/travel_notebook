@@ -15,7 +15,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 from the_root import views
 
 urlpatterns = [
@@ -23,6 +25,14 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("home/", views.product_homepage, name="product_homepage"),
     path("logout/", views.logout_view, name="logout"),
+    path("explore/", include("explore_world.urls")),
+    path("interact/", include("interact.urls")),
+    path("footprint/", include("travel_footprint.urls")),
     path('login/', include("login.urls")),
     path('register/', include("register.urls")),
+    path('wmmr/', include("record_memories.urls")),
 ]
+
+# 开发环境下提供媒体文件服务
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -39,6 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'login',
     'register',
+    'record_memories',
+    'explore_world',
+    'interact',
+    'travel_footprint',
 ]
 
 MIDDLEWARE = [
@@ -125,6 +129,10 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static'
 ]
+
+# 媒体文件（用户上传的图片等）
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 
 
