@@ -7,6 +7,7 @@ class User(models.Model):
     email = models.EmailField(max_length=254, unique=True, verbose_name='邮箱')
     password = models.CharField(max_length=256, verbose_name='密码')
     superuser = models.BooleanField(default=False, verbose_name='超级用户')
+    avatar = models.ImageField(upload_to='avatars/', blank=True, default='', verbose_name='头像')
     aactive = models.BooleanField(default=True, verbose_name='是否激活')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')

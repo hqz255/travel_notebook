@@ -1,0 +1,449 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel memories - 账号设置</title>
+    <link rel="stylesheet" href="{% static 'bootstrap/bootstrap.min.css' %}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #f5f6fa; }
+
+        /* ===== 导航栏 ===== */
+        .navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+        .navbar .nav-link { color: #fff !important; font-size: 15px; margin: 0 12px; transition: color 0.3s; }
+        .navbar .nav-link:hover { color: #00d4ff !important; }
+        .navbar .navbar-brand { color: #fff !important; font-size: 22px; font-weight: bold; }
+        .navbar .navbar-brand:hover { color: #00d4ff !important; }
+
+        .avatar-wrapper { position: relative; margin-left: 28px; cursor: pointer; }
+        .avatar-placeholder {
+            width: 40px; height: 40px; border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: #fff; font-size: 18px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+        .avatar-wrapper:hover .avatar-placeholder { border-color: #fff; transform: scale(1.08); }
+        .avatar-img {
+            width: 40px; height: 40px; border-radius: 50%;
+            object-fit: cover; border: 2px solid rgba(255, 255, 255, 0.5);
+            transition: border-color 0.3s, transform 0.3s;
+        }
+        .avatar-wrapper:hover .avatar-img { border-color: #fff; transform: scale(1.08); }
+        .avatar-dropdown {
+            position: absolute; right: 0; top: 52px; min-width: 160px;
+            background: rgba(30, 30, 50, 0.95); backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35); overflow: hidden;
+            opacity: 0; visibility: hidden; transform: translateY(-8px);
+            transition: opacity 0.25s, visibility 0.25s, transform 0.25s; z-index: 1001;
+        }
+        .avatar-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        .avatar-dropdown .dropdown-header { padding: 14px 18px 8px; color: #ccc; font-size: 13px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .avatar-dropdown .dropdown-header strong { color: #fff; font-size: 15px; }
+        .avatar-dropdown .dropdown-item { padding: 11px 18px; color: #ddd; font-size: 14px; text-decoration: none; display: block; transition: background 0.2s, color 0.2s; }
+        .avatar-dropdown .dropdown-item:hover { background: rgba(0, 212, 255, 0.15); color: #00d4ff; }
+        .avatar-dropdown .dropdown-divider { border-top: 1px solid rgba(255, 255, 255, 0.1); }
+
+        /* ===== 主体内容 ===== */
+        .main-content { padding-top: 80px; min-height: 100vh; }
+
+        /* Hero 区域 */
+        .page-hero {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            color: #fff; text-align: center; padding: 60px 0 50px;
+        }
+        .page-hero h1 { font-size: 38px; font-weight: bold; margin-bottom: 12px; }
+        .page-hero p { font-size: 16px; opacity: 0.75; margin: 0; }
+
+        /* ===== 设置内容区 ===== */
+        .settings-section { padding: 40px 0 80px; }
+
+        /* 左侧导航卡片 */
+        .side-nav-card {
+            background: #fff; border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            overflow: hidden; position: sticky; top: 100px;
+        }
+        .side-nav-card .nav-header {
+            padding: 20px 24px; font-size: 16px; font-weight: bold;
+            color: #1a1a2e; border-bottom: 1px solid #f0f0f0;
+        }
+        .side-nav-card .nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 14px 24px; color: #555; font-size: 15px;
+            text-decoration: none; cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: background 0.2s, color 0.2s, border-color 0.2s;
+        }
+        .side-nav-card .nav-item:hover { background: #f8f9fa; color: #00a8cc; }
+        .side-nav-card .nav-item.active {
+            background: #e6f9fc; color: #0099cc;
+            border-left-color: #00d4ff; font-weight: 600;
+        }
+
+        /* 右侧设置面板 */
+        .settings-panel {
+            background: #fff; border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            padding: 32px 36px;
+        }
+        .settings-panel .panel-title {
+            font-size: 22px; font-weight: bold; color: #1a1a2e;
+            margin-bottom: 8px; padding-bottom: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .settings-panel .panel-desc {
+            font-size: 14px; color: #999; margin-bottom: 24px;
+        }
+        .settings-panel .form-label {
+            font-size: 14px; font-weight: 600; color: #333; margin-bottom: 6px;
+        }
+        .settings-panel .form-input {
+            width: 100%; padding: 12px 16px; font-size: 15px;
+            border: 1px solid #ddd; border-radius: 8px;
+            outline: none; transition: border-color 0.3s, box-shadow 0.3s;
+            background: #fafafa;
+        }
+        .settings-panel .form-input:focus {
+            border-color: #00d4ff; box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+            background: #fff;
+        }
+        .settings-panel .form-input.input-error { border-color: #ff6b6b; background: #fff5f5; }
+        .settings-panel .form-hint {
+            display: block; margin-top: 5px; font-size: 12px;
+            color: #999; padding-left: 4px;
+        }
+        .settings-panel .form-hint.error { color: #ff6b6b; }
+        .settings-panel .form-group { margin-bottom: 20px; }
+
+        .btn-submit {
+            display: inline-block; padding: 12px 32px;
+            font-size: 15px; font-weight: bold; color: #fff;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            border: none; border-radius: 8px; cursor: pointer;
+            transition: opacity 0.3s, transform 0.3s, box-shadow 0.3s;
+        }
+        .btn-submit:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0, 212, 255, 0.3); }
+        .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .btn-outline {
+            display: inline-block; padding: 10px 24px;
+            font-size: 14px; color: #666;
+            background: #fff; border: 1px solid #ddd; border-radius: 8px;
+            cursor: pointer; transition: border-color 0.3s, color 0.3s;
+        }
+        .btn-outline:hover { border-color: #00d4ff; color: #00a8cc; }
+
+        /* 消息提示 */
+        .alert-box {
+            padding: 12px 18px; border-radius: 8px; margin-bottom: 20px;
+            font-size: 14px; line-height: 1.6;
+        }
+        .alert-error { background: #fff5f5; color: #c0392b; border: 1px solid #f5c6cb; }
+        .alert-success { background: #f0fff4; color: #27ae60; border: 1px solid #c3e6cb; }
+
+        /* 头像上传区域 */
+        .avatar-upload-area {
+            display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+        }
+        .avatar-preview {
+            width: 100px; height: 100px; border-radius: 50%;
+            object-fit: cover; border: 3px solid #e8e8e8;
+            background: linear-gradient(135deg, #e6f4ff, #d6ecff);
+        }
+        .avatar-preview-placeholder {
+            width: 100px; height: 100px; border-radius: 50%;
+            border: 3px solid #e8e8e8;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: #fff; font-size: 36px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .avatar-upload-controls { display: flex; flex-direction: column; gap: 10px; }
+        .avatar-upload-controls .file-info { font-size: 13px; color: #999; }
+
+        /* 响应式 */
+        @media (max-width: 767.98px) {
+            .side-nav-card { position: static; margin-bottom: 20px; }
+            .side-nav-card .nav-item { padding: 12px 18px; font-size: 14px; }
+            .settings-panel { padding: 24px 20px; }
+        }
+
+        .site-footer { background: #1a1a2e; color: rgba(255,255,255,0.5); text-align: center; padding: 24px 0; font-size: 14px; }
+    </style>
+</head>
+<body>
+    {% include 'includes/navbar_authenticated.html' with active_page='user_setting' %}
+
+    <div class="main-content">
+        <!-- Hero 横幅 -->
+        <section class="page-hero">
+            <div class="container">
+                <h1>⚙️ 账号设置</h1>
+                <p>管理你的个人信息、密码和头像</p>
+            </div>
+        </section>
+
+        <section class="settings-section">
+            <div class="container">
+                <div class="row">
+                    <!-- 左侧导航 -->
+                    <div class="col-md-3 mb-4">
+                        <div class="side-nav-card">
+                            <div class="nav-header">📋 设置菜单</div>
+                            <a class="nav-item active" href="#panel-profile" data-panel="profile">
+                                👤 个人信息
+                            </a>
+                            <a class="nav-item" href="#panel-password" data-panel="password">
+                                🔒 修改密码
+                            </a>
+                            <a class="nav-item" href="#panel-avatar" data-panel="avatar">
+                                🖼️ 更换头像
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 右侧内容 -->
+                    <div class="col-md-9">
+
+                        {% if success %}
+                        <div class="alert-box alert-success">{{ success }}</div>
+                        {% endif %}
+                        {% if errors %}
+                        <div class="alert-box alert-error">
+                            <ul style="margin:0;padding-left:18px;">
+                                {% for error in errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        <!-- ========== 个人信息面板 ========== -->
+                        <div class="settings-panel" id="panel-profile">
+                            <h3 class="panel-title">👤 个人信息</h3>
+                            <p class="panel-desc">修改你的用户名和邮箱地址</p>
+
+                            <form action="{% url 'user_information:user_setting' %}" method="post" id="profileForm">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="update_profile">
+
+                                <div class="form-group">
+                                    <label class="form-label" for="id_username">用户名</label>
+                                    <input type="text" class="form-input" id="id_username" name="username"
+                                           value="{{ form_data.username|default:username }}" maxlength="20"
+                                           placeholder="请输入用户名" required>
+                                    <small class="form-hint">1-20 个字符，中英文均可</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="id_email">邮箱</label>
+                                    <input type="email" class="form-input" id="id_email" name="email"
+                                           value="{{ form_data.email|default:email }}"
+                                           placeholder="请输入邮箱地址" required>
+                                    <small class="form-hint">用于接收验证码和通知</small>
+                                </div>
+
+                                <button type="submit" class="btn-submit">💾 保存修改</button>
+                            </form>
+                        </div>
+
+                        <!-- ========== 修改密码面板 ========== -->
+                        <div class="settings-panel mt-4" id="panel-password">
+                            <h3 class="panel-title">🔒 修改密码</h3>
+                            <p class="panel-desc">为保障账号安全，修改密码需要验证当前密码</p>
+
+                            <form action="{% url 'user_information:user_setting' %}" method="post" id="passwordForm">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="change_password">
+
+                                <div class="form-group">
+                                    <label class="form-label" for="id_current_password">当前密码</label>
+                                    <input type="password" class="form-input" id="id_current_password"
+                                           name="current_password" placeholder="请输入当前密码" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="id_new_password">新密码</label>
+                                    <input type="password" class="form-input" id="id_new_password"
+                                           name="new_password" placeholder="请输入新密码（至少 6 位）" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="id_confirm_password">确认新密码</label>
+                                    <input type="password" class="form-input" id="id_confirm_password"
+                                           name="confirm_password" placeholder="请再次输入新密码" required>
+                                    <small class="form-hint" id="passwordHint"></small>
+                                </div>
+
+                                <button type="submit" class="btn-submit">🔐 修改密码</button>
+                            </form>
+                        </div>
+
+                        <!-- ========== 更换头像面板 ========== -->
+                        <div class="settings-panel mt-4" id="panel-avatar">
+                            <h3 class="panel-title">🖼️ 更换头像</h3>
+                            <p class="panel-desc">上传一张图片作为你的个人头像</p>
+
+                            <form action="{% url 'user_information:user_setting' %}" method="post"
+                                  enctype="multipart/form-data" id="avatarForm">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="upload_avatar">
+
+                                <div class="avatar-upload-area">
+                                    {% if avatar_url %}
+                                    <img class="avatar-preview" src="{{ avatar_url }}" alt="当前头像" id="avatarPreviewImg">
+                                    {% else %}
+                                    <div class="avatar-preview-placeholder" id="avatarPreviewPlaceholder">
+                                        {{ username|slice:":1"|upper }}
+                                    </div>
+                                    <img class="avatar-preview" src="" alt="头像预览" id="avatarPreviewImg"
+                                         style="display:none;">
+                                    {% endif %}
+
+                                    <div class="avatar-upload-controls">
+                                        <input type="file" class="form-input" id="id_avatar" name="avatar"
+                                               accept=".jpg,.jpeg,.png,.webp,.gif,.bmp"
+                                               style="padding:10px 12px; width:auto;">
+                                        <span class="file-info">支持 JPG / PNG / WEBP / GIF / BMP，最大 5 MB</span>
+                                        <button type="submit" class="btn-submit" style="width:fit-content;">📷 上传头像</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                    </div><!-- /col-md-9 -->
+                </div><!-- /row -->
+            </div>
+        </section>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container">&copy; 2026 Travel memories. All rights reserved.</div>
+    </footer>
+
+    <script src="{% static 'Jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'bootstrap/bootstrap.bundle.min.js' %}"></script>
+    <script>
+    $(function () {
+        // ===== 头像下拉菜单 =====
+        var $dropdown = $('#avatarDropdown');
+        $('#avatarWrapper').on('click', function (e) { e.stopPropagation(); $dropdown.toggleClass('show'); });
+        $(document).on('click', function () { $dropdown.removeClass('show'); });
+        $dropdown.on('click', function (e) { e.stopPropagation(); });
+
+        // ===== 左侧导航切换 & 平滑滚动 =====
+        $('.side-nav-card .nav-item').on('click', function (e) {
+            e.preventDefault();
+            var targetId = $(this).data('panel');
+            var $target = $('#' + targetId);
+            if ($target.length) {
+                $('html, body').animate({ scrollTop: $target.offset().top - 100 }, 400);
+            }
+            // 高亮当前项
+            $('.side-nav-card .nav-item').removeClass('active');
+            $(this).addClass('active');
+        });
+
+        // ===== 密码确认实时校验 =====
+        var $newPwd = $('#id_new_password');
+        var $confirmPwd = $('#id_confirm_password');
+        var $pwdHint = $('#passwordHint');
+
+        function checkPasswordMatch() {
+            var newVal = $newPwd.val();
+            var confirmVal = $confirmPwd.val();
+            if (confirmVal && newVal !== confirmVal) {
+                $pwdHint.text('两次输入的密码不一致').addClass('error');
+                $confirmPwd.addClass('input-error');
+            } else if (confirmVal) {
+                $pwdHint.text('密码一致').removeClass('error');
+                $confirmPwd.removeClass('input-error');
+            } else {
+                $pwdHint.text('').removeClass('error');
+                $confirmPwd.removeClass('input-error');
+            }
+        }
+
+        $confirmPwd.on('input', checkPasswordMatch);
+        $newPwd.on('input', function () {
+            if ($confirmPwd.val()) checkPasswordMatch();
+        });
+
+        // 提交密码前校验
+        $('#passwordForm').on('submit', function (e) {
+            if ($newPwd.val() !== $confirmPwd.val()) {
+                e.preventDefault();
+                $pwdHint.text('两次输入的密码不一致').addClass('error');
+                $confirmPwd.addClass('input-error');
+                $confirmPwd.focus();
+            }
+        });
+
+        // ===== 头像预览 =====
+        $('#id_avatar').on('change', function () {
+            var file = this.files[0];
+            if (!file) return;
+
+            // 客户端大小检查
+            var maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                alert('头像文件过大，最大允许 5 MB');
+                this.value = '';
+                return;
+            }
+
+            // 客户端格式检查
+            var allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp'];
+            var fileName = file.name.toLowerCase();
+            var ext = fileName.substring(fileName.lastIndexOf('.'));
+            if (allowedExts.indexOf(ext) === -1) {
+                alert('不支持的文件格式，请上传 JPG / PNG / WEBP / GIF / BMP 格式');
+                this.value = '';
+                return;
+            }
+
+            // 预览
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var $placeholder = $('#avatarPreviewPlaceholder');
+                var $img = $('#avatarPreviewImg');
+                $placeholder.hide();
+                $img.attr('src', e.target.result).show();
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // ===== 如果有 hash，自动滚动到对应面板 =====
+        if (window.location.hash) {
+            var $target = $(window.location.hash);
+            if ($target.length) {
+                setTimeout(function () {
+                    $('html, body').animate({ scrollTop: $target.offset().top - 100 }, 400);
+                }, 300);
+                // 高亮对应导航
+                $('.side-nav-card .nav-item').removeClass('active');
+                $('.side-nav-card .nav-item[href="' + window.location.hash + '"]').addClass('active');
+            }
+        }
+
+        // ===== 如果有服务端错误，自动滚动到第一个错误所在面板 =====
+        {% if errors %}
+        var $firstError = $('.alert-error').first();
+        if ($firstError.length) {
+            setTimeout(function () {
+                $('html, body').animate({ scrollTop: $firstError.offset().top - 120 }, 400);
+            }, 300);
+        }
+        {% endif %}
+    });
+    </script>
+</body>
+</html>

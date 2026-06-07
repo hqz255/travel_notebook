@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'explore_world',
     'interact',
     'travel_footprint',
+    'user_information',
 ]
 
 MIDDLEWARE = [
@@ -67,6 +68,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'the_root.context_processors.user_info',
             ],
             'builtins':['django.templatetags.static']
         },
@@ -151,5 +153,5 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_HOST_USER = '1357336708@qq.com'          # TODO: 替换为你的QQ邮箱地址
-EMAIL_HOST_PASSWORD = 'qhqcxuubeuxsfiaf'   # TODO: 替换为QQ邮箱授权码
+EMAIL_HOST_PASSWORD = 'luzbeurzmbkpjeib'   # TODO: 替换为QQ邮箱授权码
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER               # 发件人地址

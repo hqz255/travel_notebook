@@ -31,6 +31,7 @@ urlpatterns = [
     path('login/', include("login.urls")),
     path('register/', include("register.urls")),
     path('wmmr/', include("record_memories.urls")),
+    path('user/', include("user_information.urls")),
 ]
 
 # 开发环境下提供媒体文件服务
